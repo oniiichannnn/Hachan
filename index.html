@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hachan</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link href="./index.css" rel="stylesheet">
+</head>
+<body>
+    <div id="view" class="hidden">
+        <div id="up">
+            <button id="close-btn" class="action">X</button>
+
+
+            <button id="inc-size" class="action">Size +</button>
+            <button id="dec-size" class="action">Size -</button>
+        </div>
+
+        <div id="bot">
+
+        </div>
+    </div>
+
+    <div id="image_dirs">
+
+    </div>
+
+    <script type="module">
+        let CurrentInView;
+        let CurrentMaxWidth = 50;
+
+
+        import ImageData from "./ImageData.json" assert { type: "json" };
+
+        const parent = document.getElementById("image_dirs");
+
+        const dirs = Object.keys(ImageData);
+
+        dirs.forEach(dir => {
+            const dir_element = document.createElement("button");
+
+            dir_element.classList.add("dir-view");
+            dir_element.id = dir;
+            dir_element.innerHTML = 
+                `
+                <img src="./images/${dir}/1.jpg">
+                <h1>${dir}</h1>
+                `
+
+            document.body.appendChild(dir_element);
+            parent.appendChild(dir_element);
+
+            dir_element.addEventListener("click", event => {
+                document.getElementById("view").classList.remove("hidden");
+                document.getElementById("image_dirs").classList.add("hidden");
+
+                const MaxImage = ImageData[dir];
+                
+                if (CurrentInView !== dir) {
+                    if (CurrentInView) {
+                        Array.from(document.getElementsByClassName("image")).forEach(e => e.remove());
+                    }
+
+                    for (let i = 0 ; i < 2 ; i++) {
+                    // for (let i = 0 ; i < MaxImage ; i++) {
+                        const image_el = document.createElement("img");
+    
+                        image_el.classList.add("image");
+                        image_el.classList.add("max-width-50");
+
+                        image_el.id = `img_${i + 1}`;
+                        image_el.src = `./images/${dir}/${i + 1}.jpg`;
+                        image_el.style.width = `${CurrentMaxWidth}%`
+    
+                        document.body.appendChild(image_el);
+                        document.querySelector("#view #bot").appendChild(image_el)
+                    }
+
+                    CurrentInView = dir;
+                }
+            })
+        });
+
+
+
+        document.getElementById("close-btn").addEventListener("click", event => {
+            document.getElementById("view").classList.add("hidden");
+            document.getElementById("image_dirs").classList.remove("hidden");
+        });
+
+
+        document.getElementById("inc-size").addEventListener("click", event => {
+            CurrentMaxWidth = Math.min(100, CurrentMaxWidth + 10);
+
+            Array.from(document.getElementsByClassName("image")).forEach(el => {
+                el.style.width = `${CurrentMaxWidth}%`
+            })
+        });
+
+        document.getElementById("dec-size").addEventListener("click", event => {
+            CurrentMaxWidth = Math.max(10, CurrentMaxWidth - 10);
+
+            Array.from(document.getElementsByClassName("image")).forEach(el => {
+                el.style.width = `${CurrentMaxWidth}%`
+            })
+        });
+
+
+        function parseInt (string) {
+            return Number(string.match(/[0-9]+/)?.[0]);
+        }
+    </script>
+</body>
+</html>

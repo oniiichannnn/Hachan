@@ -1,0 +1,110 @@
+body, html {
+    background-color: var(--blue-600);
+    height: 100%;
+    margin: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.action {
+    border: none;
+    font-family: monospace;
+    font-size: 30px;
+    border-radius: 10px;
+
+    margin-right: 2px;
+    margin-left: 2px;
+
+    background-color: var(--red-300);
+    color: var(--white-300);
+
+    cursor: pointer;
+}
+
+#view {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#view #up {
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+
+    width: 100%;
+    background-color: var(--green-300);
+}
+
+#view #bot {
+    margin-top: 10px;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#image_dirs {
+    width: 95%;
+    margin-left: 2.5%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+
+
+#image_dirs button,
+#image_dirs button > * {
+    cursor: pointer;
+}
+
+#image_dirs button {
+    background-color: var(--green-300);
+    border-color: var(--white-300);
+    border: solid;
+    border-width: 2px;
+    border-radius: 10px;
+
+    width: 60%;
+
+    display: flex;
+    flex-direction: row;
+}
+
+#image_dirs button img {
+    max-width: 20%;
+    border-radius: 10px;
+}
+
+#image_dirs button h1 {
+    font-size: 15px;
+    font-family: monospace;
+    color: var(--white-100);
+
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+:root {
+    --white-100: #F0E9D2;
+    --white-300: #E6DDC4;
+
+    --green-300: #678983;
+    --red-300: rgb(231, 89, 89);
+
+    --blue-600: #181D31;
+}
