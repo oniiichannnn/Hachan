@@ -39,7 +39,7 @@
 
         const dirs = Object.keys(ImageData);
 
-        dirs.forEach(dir => {
+        dirs.forEach((dir, dirindex) => {
             const dir_element = document.createElement("button");
 
             dir_element.classList.add("dir-view");
@@ -47,7 +47,13 @@
             dir_element.innerHTML = 
                 `
                 <img src="./images/${dir}/1.jpg">
-                <h1>${dir}</h1>
+                ${
+                    localStorage.getItem(`last-read-${dir}`) ?
+                        `<h1 id="last-read">Continue reading at page ${localStorage.getItem(`last-read-${dir}`)}</h1>` 
+                        : 
+                        ""
+                }
+                <h1 id="title">${dir}</h1>
                 `
 
             document.body.appendChild(dir_element);
@@ -73,18 +79,45 @@
 
                         image_el.id = `img_${i + 1}`;
                         image_el.src = `./images/${dir}/${i + 1}.jpg`;
-                        image_el.style.width = `${CurrentMaxWidth}%`
+                        image_el.style.width = `${CurrentMaxWidth}%`;
     
                         document.body.appendChild(image_el);
-                        document.querySelector("#view #bot").appendChild(image_el)
+                        document.querySelector("#view #bot").appendChild(image_el);
                     }
 
                     CurrentInView = dir;
                 }
-            })
+
+                if (localStorage.getItem(`last-read-${dir}`)) {
+                    const scrollToBtn = document.createElement("button");
+
+                    scrollToBtn.id = "scroll-to-btn";
+                    scrollToBtn.classList.add("action");
+                    scrollToBtn.innerHTML = `Scroll to Page ${localStorage.getItem(`last-read-${dir}`)}`;
+                    
+                    document.body.appendChild(scrollToBtn);
+                    document.getElementById("up").appendChild(scrollToBtn);
+                }
+            });
+
+
+            if (dirindex === dirs.length - 1) {
+                document.getElementById("up").addEventListener("click", event => {
+                    const ScrollToElement = document.getElementById(`img_${localStorage.getItem(`last-read-${dir}`)}`);
+
+                    ScrollToElement.scrollIntoView(true);
+                });
+            }
         });
 
 
+        document.addEventListener("scroll", event => {
+            if (CurrentInView) {
+                const Page = Number(Array.from(document.getElementsByClassName("image")).find(e => e.getBoundingClientRect().y > 1).id.slice("img_".length));
+
+                window.localStorage.setItem(`last-read-${CurrentInView}`, Page);
+            }
+        })
 
         document.getElementById("close-btn").addEventListener("click", event => {
             document.getElementById("view").classList.add("hidden");

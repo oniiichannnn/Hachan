@@ -20,6 +20,7 @@ fs.writeFileSync("./ImageData.json", JSON.stringify(WriteData, null, 2));
 
 const NewlyAddedImages = Object.keys(WriteData).filter(imagedir => imagedir in oldFiles === false);
 
+console.log("Newly Added", NewlyAddedImages);
 
 const command = `git add . && git commit -m \"added [${NewlyAddedImages.length}] ${NewlyAddedImages.join(", ")}\" && git push -u origin main`;
 

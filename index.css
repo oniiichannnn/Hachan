@@ -4,6 +4,9 @@ body, html {
     margin: 0;
 }
 
+html { height: 100%; overflow:auto; }
+body { height: 100%; }
+
 .hidden {
     display: none !important;
 }
@@ -11,7 +14,7 @@ body, html {
 .action {
     border: none;
     font-family: monospace;
-    font-size: 30px;
+    font-size: 24px;
     border-radius: 10px;
 
     margin-right: 2px;
@@ -90,7 +93,20 @@ body, html {
     border-radius: 10px;
 }
 
-#image_dirs button h1 {
+#image_dirs button h1#last-read {
+    font-size: 15px;
+    font-family: monospace;
+    background-color: var(--blue-600);
+    color: var(--white-300);
+
+    padding: 6px 3px 6px 3px;
+    border-radius: 10px;
+
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#image_dirs button h1#title {
     font-size: 15px;
     font-family: monospace;
     color: var(--white-100);
