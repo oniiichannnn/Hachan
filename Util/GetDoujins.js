@@ -149,6 +149,16 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
 
             0;
 
+
+
+        if (startfrom_page === GalleryPages) {
+            const alreadylastpage = await FetchImages(GalleryPages - 1, 0, true, startfrom_inner_page);
+
+            if (alreadylastpage) continue;
+        }
+
+
+
         if (startfromdata) {
             console.log({ startfrom_page, startfrom_inner_page, startfromdata })
         }
@@ -170,7 +180,7 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
             }
         }
 
-        async function FetchImages (page, galleryindex) {
+        async function FetchImages (page, galleryindex, checking, inner) {
             // https://e-hentai.org/g/2231376/a7584a5932/?p=1
 
             if (page !== 1) {
@@ -195,6 +205,9 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
     
     
     
+            if (checking) {
+                return PageURLS.length === inner
+            }
     
             __Log(cli.green(`Page ${page} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] 🔍 Found ${PageURLS.length} pages`));
             __Log("\n");
