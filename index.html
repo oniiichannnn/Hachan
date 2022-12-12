@@ -7,7 +7,9 @@
     <title>Hachan</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
     <link href="./index.css" rel="stylesheet">
+    <link href="./relative.css" rel="stylesheet">
 </head>
 <body>
     <div id="view" class="hidden">
@@ -30,8 +32,9 @@
 
     <script type="module">
         let CurrentInView;
-        let CurrentMaxWidth = 50;
+        let Completed = 0;
 
+        let LastReadYCoordinate = 0;
 
         import ImageData from "./ImageData.json" assert { type: "json" };
 
@@ -46,14 +49,16 @@
             dir_element.id = dir;
             dir_element.innerHTML = 
                 `
-                <img src="./images/${dir}/1.jpg">
-                ${
-                    localStorage.getItem(`last-read-${dir}`) ?
-                        `<h1 id="last-read">Continue reading at page ${localStorage.getItem(`last-read-${dir}`)}</h1>` 
-                        : 
-                        ""
-                }
-                <h1 id="title">${dir}</h1>
+                <div id="container">
+                    <img src="./images/${dir}/1.jpg">
+                    ${
+                        localStorage.getItem(`last-read-${dir}`) ?
+                            `<h1 id="last-read">Continue reading at page ${JSON.parse(localStorage.getItem(`last-read-${dir}`)).page}</h1>` 
+                            : 
+                            ""
+                    }
+                    <h1 id="title">${dir.name}</h1>
+                </div>
                 `
 
             document.body.appendChild(dir_element);
@@ -63,61 +68,52 @@
                 document.getElementById("view").classList.remove("hidden");
                 document.getElementById("image_dirs").classList.add("hidden");
 
-                const MaxImage = ImageData[dir];
-                
+                const MaxImage = ImageData[dir].NumberOfImages;
+
                 if (CurrentInView !== dir) {
                     if (CurrentInView) {
                         Array.from(document.getElementsByClassName("image")).forEach(e => e.remove());
                     }
 
-                    // for (let i = 0 ; i < 2 ; i++) {
+                    if (localStorage.getItem(`last-read-${dir}`)) {
+                        LastReadYCoordinate = JSON.parse(localStorage.getItem(`last-read-${dir}`)).y;
+                    }
+
                     for (let i = 0 ; i < MaxImage ; i++) {
                         const image_el = document.createElement("img");
     
                         image_el.classList.add("image");
-                        image_el.classList.add("max-width-50");
 
                         image_el.id = `img_${i + 1}`;
                         image_el.src = `./images/${dir}/${i + 1}.jpg`;
-                        image_el.style.width = `${CurrentMaxWidth}%`;
     
                         document.body.appendChild(image_el);
                         document.querySelector("#view #bot").appendChild(image_el);
+
+                        if (localStorage.getItem(`last-read-${dir}`)) {
+                            image_el.onload = function () {
+                                ScrollToLastRead(MaxImage, dir)
+                            }
+                        }
                     }
 
                     CurrentInView = dir;
                 }
-
-                if (localStorage.getItem(`last-read-${dir}`)) {
-                    const scrollToBtn = document.createElement("button");
-
-                    scrollToBtn.id = "scroll-to-btn";
-                    scrollToBtn.classList.add("action");
-                    scrollToBtn.innerHTML = `Scroll to Page ${localStorage.getItem(`last-read-${dir}`)}`;
-                    
-                    document.body.appendChild(scrollToBtn);
-                    document.getElementById("up").appendChild(scrollToBtn);
-                }
             });
-
-
-            if (dirindex === dirs.length - 1) {
-                document.getElementById("up").addEventListener("click", event => {
-                    const ScrollToElement = document.getElementById(`img_${localStorage.getItem(`last-read-${dir}`)}`);
-
-                    ScrollToElement.scrollIntoView(true);
-                });
-            }
         });
 
 
-        document.addEventListener("scroll", event => {
+        $(window).scroll(function () { 
+            //You've scrolled this much:
             if (CurrentInView) {
                 const Page = Number(Array.from(document.getElementsByClassName("image")).find(e => e.getBoundingClientRect().y > 1).id.slice("img_".length));
 
-                window.localStorage.setItem(`last-read-${CurrentInView}`, Page);
+                window.localStorage.setItem(`last-read-${CurrentInView}`, JSON.stringify({ 
+                    page: Page, 
+                    y: $(window).scrollTop()
+                }));
             }
-        })
+        });
 
         document.getElementById("close-btn").addEventListener("click", event => {
             document.getElementById("view").classList.add("hidden");
@@ -141,6 +137,40 @@
             })
         });
 
+        function ScrollToLastRead (required, dir) {
+            Completed++
+            if (Completed === 1) {
+                const scrollToBtn = document.createElement("button");
+
+                scrollToBtn.id = "scroll-to-btn";
+                scrollToBtn.classList.add("action");
+                scrollToBtn.classList.add("scroll-btn-not-done");
+                scrollToBtn.innerHTML = `Loading ${((Completed / required) * 100).toFixed(2)}% (${Completed}/${required})`;
+                
+                document.body.appendChild(scrollToBtn);
+                document.getElementById("up").appendChild(scrollToBtn);
+            } else if (Completed !== required) {
+                const scrollToBtn = document.getElementById("scroll-to-btn");
+
+                scrollToBtn.innerHTML = `Loading ${((Completed / required) * 100).toFixed(2)}% (${Completed}/${required})`;
+            }
+
+            if (Completed === required) {
+                const PageToScrollTo = Array.from(document.getElementsByClassName("image"))
+                    .filter(e => e.getBoundingClientRect().y > LastReadYCoordinate)
+                    .sort((a,b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y)[0]
+                    ?.id
+                    .slice("img_".length);
+
+                const scrollToBtn = document.getElementById("scroll-to-btn");
+                scrollToBtn.innerHTML = `Scroll to Page ${PageToScrollTo}`;
+                scrollToBtn.classList.remove("scroll-btn-not-done");
+
+                scrollToBtn.addEventListener("click", event => {
+                    window.scrollTo({ top: LastReadYCoordinate })
+                });
+            }
+        }
 
         function parseInt (string) {
             return Number(string.match(/[0-9]+/)?.[0]);

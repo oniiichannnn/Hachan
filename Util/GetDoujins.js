@@ -5,33 +5,78 @@ const fs = require("fs");
 const Settings  = require("../settings.json");
 const readline  = require("readline");
 
-const rl        = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
 /**
  * 
  * @param {string} ParsedHTMLContent
  */
-module.exports = async function ( HTMLContent , WebSocketClient ) {
+module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
     let Counters = new Map();
 
 
-    const ParsedHTMLContent = parse(HTMLContent);
+    let SearchResults = [];
+    let isQueued = false;
 
-    const Parents = ParsedHTMLContent.querySelectorAll(".gl3c.glname");
+    if (HTMLContent) {
+        const ParsedHTMLContent = parse(HTMLContent);
 
-    const SearchResults = Parents
-        .map((Parent, i) => {
-            const ChildElement  = Parent.childNodes[0];
-            // const URL           = ChildElement.rawAttrs.match(/https:\/\/e-hentai\.org\/[a-zA-Z0-9 \W]+\/$/)[0];
+        const MaxPages = Math.ceil( Number(ParsedHTMLContent.querySelector("div.searchtext").innerText.match(/[0-9]+/)[0]) / 25);
+        let NextPage
 
-            return {
-                link: ChildElement._rawAttrs.href,
-                title: ParsedHTMLContent.querySelectorAll(".glink")[i].text
-            };
-        });
+        for (let i = 0 ; i < MaxPages ; i++) {
+            if (i === 0) {
+                await Search(HTMLContent);
+            } else if (NextPage) {
+                const Response = await $.get(NextPage);
+
+                const HTMLContent = Response.body.toString();
+
+                await Search(HTMLContent);
+            } else {
+                console.log(cli.red(`At page ${i + 1}/${MaxPages}: could not find url to next page`));
+            }
+        }
+        
+        async function Search (HTMLContent) {
+            const ParsedHTMLContent = parse(HTMLContent);
+    
+            const Parents = ParsedHTMLContent.querySelectorAll(".gl3c.glname");
+        
+            SearchResults.push(...Parents
+                .map((Parent, i) => {
+                    const ChildElement  = Parent.childNodes[0];
+                    // const URL           = ChildElement.rawAttrs.match(/https:\/\/e-hentai\.org\/[a-zA-Z0-9 \W]+\/$/)[0];
+        
+                    return {
+                        link: ChildElement._rawAttrs.href,
+                        title: ParsedHTMLContent.querySelectorAll(".glink")[i].text
+                    };
+                }));
+
+            NextPage = ParsedHTMLContent.querySelector("#unext")?.attributes?.href;
+        }
+    } else {
+        SearchResults = await (async () => {
+            let result = [];
+
+            for (const url of Links) {
+                try {
+                    const Page          = await $.get(url);
+                    const ParsedPage    = parse(Page.body.toString());
+
+                    result.push({
+                        link: url,
+                        title: ParsedPage.querySelector("h1#gn").text
+                    });
+                } catch (e) {
+                    throw e
+                }
+            }
+
+            isQueued = true;
+
+            return result
+        }) ();
+    }
 
 
 
@@ -48,42 +93,55 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
     */
 
 
-    const DoujinsToDownload = await (async () => {
-        return new Promise(resolve => {
-            console.log(
-                SearchResults
-                    .map((res, i) => {
-                        console.log(
-                            `${i + 1}. ${cli.yellow(res.title)}\n`+
-                            `     ${cli.blackBright(res.link)}`
-                        )
-                    })
-                    .join("\n"),
-                cli.blackBright("Type 1,2,3 to download doujin 1,2,3. Type \"all\" or leave blank to download all")
-            );
+    if (SearchResults.length === 0) return console.log(cli.red(`None results found`))
 
+    const DoujinsToDownload = isQueued ? 
+        SearchResults 
+        
+        :
 
-            rl.question(`Type doujin > `, (answer) => {
-                rl.close();
+        (await (async () => {
+            return new Promise(resolve => {
+                const rl        = readline.createInterface({
+                    input: process.stdin,
+                    output: process.stdout,
+                    terminal: false
+                });
 
-                const indexes = (answer.toLowerCase().includes("all") || answer.length === 0) ? 
-                    true
-                    :
-                    answer.includes(",") ?
-                        answer.split(",").map(a => Number(a))
-                        :
-                        [Number(answer)];
-
-
-                resolve(
+                console.log(
                     SearchResults
-                        .filter((x, index) => {
-                            return (indexes === true) || (indexes.includes(index + 1))
+                        .map((res, i) => {
+                            return (
+                                `${i + 1}. ${cli.yellow(res.title)}\n`+
+                                `     ${cli.blackBright(res.link)}\n`
+                            )
                         })
-                )
-            });
-        })
-    }) ();
+                        .join("\n"),
+                    cli.blackBright("Type 1,2,3 to download doujin 1,2,3. Type \"all\" or leave blank to download all")
+                );
+
+
+                rl.question(`Type doujin > `, (answer) => {
+                    rl.close();
+
+                    const indexes = (answer.toLowerCase().includes("all") || answer.length === 0) ? 
+                        true
+                        :
+                        answer.includes(",") ?
+                            answer.split(",").map(a => Number(a))
+                            :
+                            [Number(answer)];
+
+
+                    resolve(
+                        SearchResults
+                            .filter((x, index) => {
+                                return (indexes === true) || (indexes.includes(index + 1))
+                            })
+                    )
+                });
+            })
+        }) ());
 
 
     console.log(`[🔽 Downloading] ${DoujinsToDownload.map((d, i) => `${i + 1} ${d.title}`).join("\n")}`)
@@ -113,8 +171,15 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
 
         const GalleryPages = Math.ceil(Number(ParsedPage.querySelector(".gtb").childNodes[0].innerHTML.match(/[0-9]+ images/)[0].match(/[0-9]+/)[0]) / 40);
 
+
+        // https://e-hentai.org/g/2385294/7270316375/
+        const GalleryID = PageLink.split("/")[4];
+        const GalleryToken = PageLink.split("/")[5];
+
+
         const querytitle = ParsedPage.querySelector("h1#gn").text;
-        const FolderName        = querytitle;
+        // const FolderName        = `${querytitle}`;
+        const FolderName        = `${GalleryID}&${GalleryToken}--GAP--${querytitle}`;
         const IllegalRegex      = /[/\\?%*:|"<>]/g;
         const CleanFolderName   = FolderName.replace(IllegalRegex, "-");
 
@@ -176,7 +241,7 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
 
                 __Log(e.message);
                 __Log("Retrying ...");
-                await FetchImages(i);
+                await FetchImages(i, Index);
             }
         }
 
@@ -209,9 +274,9 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
                 return PageURLS.length === inner
             }
     
-            __Log(cli.green(`Page ${page} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] 🔍 Found ${PageURLS.length} pages`));
+            __Log(cli.green(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] 🔍 Found ${PageURLS.length} pages`));
             __Log("\n");
-            __Log(`Page ${page} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] Fetching page images ...`);
+            __Log(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] Fetching page images ...`);
     
     
     
@@ -234,14 +299,14 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
                 const Index = Count(PageCounterID);
     
     
-                __Log(`Page ${page} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] Fetching image page ...`);
+                __Log(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] Fetching image page ...`);
         
         
                 const Page          = await $.get(PageLink);
                 const ParsedPage    = parse(Page.body.toString());
         
         
-                __Log(cli.green(`Page ${page} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] ✅ Successfully fetched page`))
+                __Log(cli.green(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] ✅ Successfully fetched page`))
         
         
                 const ImageLinkElement  = ParsedPage.querySelector("div#i3 a img");
@@ -262,7 +327,7 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
                 ImageLinks.push(ImageLink);
         
         
-                __Log(`Page ${page} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] 🔍 Successfully found image link (${ImageLink})`);
+                __Log(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] 🔍 Successfully found image link (${ImageLink})`);
 
 
                 AddCounter(GlobalCounter);
@@ -276,8 +341,6 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
             
                     const ImageURL      = ImageLink;
                     const FileExtension = ImageURL.split(".").at(-1);
-        
-                    console.log({ImageURL})
         
                     let fails = 0;
                     await write();
@@ -293,7 +356,7 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
                                 }
                             })).body);
         
-                            console.log(`[${(page * 40) + i + 1}] [Page_${page}-${Index} / ${PageURLS.length} : ${CleanFolderName.substring(0, 30)}] Completed`);
+                            console.log(`[${(page * 40) + i + 1}] [Page_${page}-${Index} / ${PageURLS.length} : ${CleanFolderName.substring(0, 60)}] Completed`);
                         } catch (e) {
                             fails++
         
@@ -315,11 +378,6 @@ module.exports = async function ( HTMLContent , WebSocketClient ) {
 
 
         __Log(cli.green(`[${Index}/${PageLinks.length} : ${PageLink}] ✅ Successfully fetched all images`));
-
-
-        // https://e-hentai.org/g/2385294/7270316375/
-        const GalleryID = PageLink.split("/")[4];
-        const GalleryToken = PageLink.split("/")[5];
 
 
         const GalleryDataResponse = await $.post("https://api.e-hentai.org/api.php", {

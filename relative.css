@@ -1,0 +1,14 @@
+@media screen and (min-width:800px) and (max-width:1200px) {
+    #image_dirs button {
+        width: 40%;
+        margin: 10px calc(20% / 4) 10px calc(20% / 4);
+    }
+}
+
+
+@media screen and (max-width:800px) {
+    #image_dirs button {
+        width: 90%;
+        margin: 10px 5% 10px 5%;
+    }
+}

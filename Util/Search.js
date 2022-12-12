@@ -8,7 +8,14 @@ const { parse } = require("node-html-parser");
  * @returns {string}
  */
 module.exports = async function ( Query ) {
+    Query = Query.trim();
+
     const Base_URL      = "https://e-hentai.org/?f_search=";
+
+    if (Query.startsWith(Base_URL)) {
+        Query = Query.slice(Base_URL.length)
+    }
+
     const ParsedQuery   = encodeURIComponent(Query);
 
     const Response = await $.get(`${Base_URL}${ParsedQuery}`);

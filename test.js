@@ -1,20 +1,24 @@
-const fs        = require("fs");
+const fs = require("fs");
 
-const oldFiles = require("./ImageData.json");
+const files = fs.readdirSync("./images")
 
+let data = {}
 
-let WriteData = {};
+async function Main ()
+{
+    for (const file of files) {
+        const id = `${Date.now()}-${Math.floor(Math.random() * 100000000000)}`;
 
-// writing images data
-for (const ImageDir of fs.readdirSync("./images")) {
-    const NumberOfImages = fs.readdirSync(`./images/${ImageDir}`).length;
+        console.log(`"${file}"`)
 
-    WriteData[ImageDir] = NumberOfImages;
+        fs.renameSync
+    }
+
+    fs.writeFileSync("./names")
 }
 
-
-fs.writeFileSync("./ImageData.json", JSON.stringify(WriteData, null, 2));
-
-const NewlyAddedImages = Object.keys(WriteData).filter(imagedir => imagedir in oldFiles === false);
-
-console.log(NewlyAddedImages)
+async function wait (ms) {
+    return new Promise(res => {
+        setTimeout(() => {res(true)}, ms)
+    })
+}
