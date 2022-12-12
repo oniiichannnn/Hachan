@@ -43,7 +43,8 @@
         const dirs = Object.keys(ImageData);
 
         dirs.forEach((dir, dirindex) => {
-            const dir_element = document.createElement("button");
+            const dir_element   = document.createElement("button");
+            const Data          = ImageData[dir];
 
             dir_element.classList.add("dir-view");
             dir_element.id = dir;
@@ -57,12 +58,69 @@
                             : 
                             ""
                     }
-                    <h1 id="title">${dir.name}</h1>
+                    
+                    <div id="content">
+                        <div id="top">
+                            <h1 id="title">${Data.name}</h1>
+                        </div>
+
+                        <div id="bot">
+                            <div id="tag-ctn">
+                                ${
+                                    grp_tags(Data.tags)
+                                        .map(tag => {
+                                            return (
+                                                `
+                                                    <div class="tag" id="${tag.category}">
+                                                        <h1 id="category">${tag.category}</h1>
+
+                                                        <div class="value">
+                                                            ${
+                                                                tag.tags
+                                                                    .map(tagvalue => {
+                                                                        return (
+                                                                            `
+                                                                                <h1 class="tagvalue">${tagvalue}</h1>
+                                                                            `
+                                                                        )
+                                                                    })
+                                                                    .join("\n")
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                `
+                                            )
+                                        })
+                                        .join("\n")
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 `
 
             document.body.appendChild(dir_element);
             parent.appendChild(dir_element);
+
+
+            function grp_tags (tags) {
+                const tags_d = [];
+
+                for (const tag of tags) {
+                    const [category, value] = tag.split(":");
+
+                    if (!tags_d.find(t => t.category === category)) {
+                        tags_d.push({
+                            category,
+                            tags: [value]
+                        })
+                    } else {
+                        tags_d.find(t => t.category === category).tags.push(value)
+                    }
+                }
+
+                return tags_d
+            }
 
             dir_element.addEventListener("click", event => {
                 document.getElementById("view").classList.remove("hidden");

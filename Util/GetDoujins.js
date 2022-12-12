@@ -32,7 +32,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
 
                 await Search(HTMLContent);
             } else {
-                console.log(cli.red(`At page ${i + 1}/${MaxPages}: could not find url to next page`));
+                console.log(cli.red(`⛔ At page ${i + 1}/${MaxPages} : could not find url to next page`));
             }
         }
         
@@ -93,7 +93,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
     */
 
 
-    if (SearchResults.length === 0) return console.log(cli.red(`None results found`))
+    if (SearchResults.length === 0) return console.log(cli.red(`⛔ 0 results found`))
 
     const DoujinsToDownload = isQueued ? 
         SearchResults 
@@ -121,7 +121,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                 );
 
 
-                rl.question(`Type doujin > `, (answer) => {
+                rl.question(`Doujin(s) to download > `, (answer) => {
                     rl.close();
 
                     const indexes = (answer.toLowerCase().includes("all") || answer.length === 0) ? 
@@ -159,14 +159,14 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
         const AllLinks      = [];
 
 
-        __Log(`[${Index}/${PageLinks.length} : ${PageLink}] Fetching gallery page ...`)
+        __Log(`[${cli.redBright(`Gallery ${Index}/${PageLinks.length} ⋅ Page 0/? ⋅ (0/?)`)} : ${cli.blackBright(PageLink)}] Fetching gallery ...`)
 
 
         let Page          = await $.get(PageLink);
         let ParsedPage    = parse(Page.body.toString());
 
 
-        __Log(cli.green(`[${Index}/${PageLinks.length} : ${PageLink}] ✅ Successfully fetched page`))
+        __Log(cli.green(`[${cli.redBright(`Gallery ${Index}/${PageLinks.length} ⋅ Page 0/? ⋅ (0/?)`)} : ${cli.blackBright(PageLink)}] ✅ Successfully fetched page`))
 
 
         const GalleryPages = Math.ceil(Number(ParsedPage.querySelector(".gtb").childNodes[0].innerHTML.match(/[0-9]+ images/)[0].match(/[0-9]+/)[0]) / 40);
@@ -183,15 +183,28 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
         const IllegalRegex      = /[/\\?%*:|"<>]/g;
         const CleanFolderName   = FolderName.replace(IllegalRegex, "-");
 
-        const startfromdata = fs.existsSync(`./images/${CleanFolderName}`) ?
-            fs.readdirSync(`./images/${CleanFolderName}`)
-                .sort((a,b) => {
-                    const a1 = a.match(/[0-9]+/)[0];
-                    const b1 = b.match(/[0-9]+/)[0];
-
-                    return b1 - a1
-                })
-                [0]
+        const startfromdata = (fs.existsSync(`./images/${GalleryID}-${GalleryToken}`) || fs.existsSync(`./images/${CleanFolderName}`)) ?
+            (() => {
+                if (fs.existsSync(`./images/${CleanFolderName}`)) {
+                    fs.readdirSync(`./images/${CleanFolderName}`)
+                        .sort((a,b) => {
+                            const a1 = a.match(/[0-9]+/)[0];
+                            const b1 = b.match(/[0-9]+/)[0];
+        
+                            return b1 - a1
+                        })
+                        [0]
+                } else {
+                    fs.readdirSync(`./images/${GalleryID}-${GalleryToken}`)
+                        .sort((a,b) => {
+                            const a1 = a.match(/[0-9]+/)[0];
+                            const b1 = b.match(/[0-9]+/)[0];
+        
+                            return b1 - a1
+                        })
+                        [0]
+                }
+            }) ()
             :
             undefined;
 
@@ -216,16 +229,17 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
 
 
 
+        if (startfromdata) {
+            console.log(cli.yellow(`[${cli.redBright(`Gallery ${Index}/${PageLinks.length} ⋅ Page 0/? ⋅ (0/?)`)} : ${cli.blackBright(PageLink)}] Starting from page ${startfrom_page} (${startfrom_inner_page})`))
+        }
         if (startfrom_page === GalleryPages) {
             const alreadylastpage = await FetchImages(GalleryPages - 1, 0, true, startfrom_inner_page);
 
-            if (alreadylastpage) continue;
-        }
+            if (alreadylastpage) {
+                console.log(cli.yellow(`[${cli.redBright(`Gallery ${Index}/${PageLinks.length} ⋅ Page 0/? ⋅ (0/?)`)} : ${cli.blackBright(PageLink)}] ⏭️ Skipping`));
 
-
-
-        if (startfromdata) {
-            console.log({ startfrom_page, startfrom_inner_page, startfromdata })
+                continue;
+            }
         }
 
         for (let i = startfrom_page ; i < GalleryPages ; i++) {
@@ -240,7 +254,8 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                 retriedCount++
 
                 __Log(e.message);
-                __Log("Retrying ...");
+                __Log(`[${cli.redBright(`Gallery ${Index}/${PageLinks.length} ⋅ Page 0/? ⋅ (0/?)`)} : ${retriedCount}/10] Retrying ...`);
+
                 await FetchImages(i, Index);
             }
         }
@@ -274,9 +289,9 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                 return PageURLS.length === inner
             }
     
-            __Log(cli.green(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] 🔍 Found ${PageURLS.length} pages`));
+            __Log(cli.green(`[${cli.redBright(`Gallery ${galleryindex}/${PageLinks.length} ⋅ Page ${page + 1}/${GalleryPages} ⋅ (${Index}/${PageLinks.length})`)} : ${cli.blackBright(PageLink)}] 🔍 Found ${PageURLS.length} pages`));
             __Log("\n");
-            __Log(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageLinks.length} : ${PageLink}] Fetching page images ...`);
+            __Log(`[${cli.redBright(`Gallery ${galleryindex}/${PageLinks.length} ⋅ Page ${page + 1}/${GalleryPages} ⋅ (${Index}/${PageLinks.length})`)}] : ${cli.blackBright(PageLink)}] Fetching page images ...`);
     
     
     
@@ -299,14 +314,14 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                 const Index = Count(PageCounterID);
     
     
-                __Log(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] Fetching image page ...`);
+                __Log(`[${cli.redBright(`Gallery ${galleryindex}/${PageLinks.length} ⋅ Page ${page + 1}/${GalleryPages} ⋅ (${Index}/${PageLinks.length})`)} : ${cli.blackBright(PageLink)}] Fetching image page ...`);
         
         
                 const Page          = await $.get(PageLink);
                 const ParsedPage    = parse(Page.body.toString());
         
         
-                __Log(cli.green(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] ✅ Successfully fetched page`))
+                __Log(cli.green(`[${cli.redBright(`Gallery ${galleryindex}/${PageLinks.length} ⋅ Page ${page + 1}/${GalleryPages} ⋅ (${Index}/${PageLinks.length})`)} : ${cli.blackBright(PageLink)}] ✅ Successfully fetched page`))
         
         
                 const ImageLinkElement  = ParsedPage.querySelector("div#i3 a img");
@@ -327,7 +342,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                 ImageLinks.push(ImageLink);
         
         
-                __Log(`Page ${page + 1} ⋅ ${GalleryPages} --- [${Index}/${PageURLS.length} : ${PageLink}] 🔍 Successfully found image link (${ImageLink})`);
+                __Log(`[${cli.redBright(`Gallery ${galleryindex}/${PageLinks.length} ⋅ Page ${page + 1}/${GalleryPages} ⋅ (${Index}/${PageLinks.length})`)} : ${cli.blackBright(PageLink)}] 🔍 Successfully found image link (${ImageLink})`);
 
 
                 AddCounter(GlobalCounter);
@@ -356,7 +371,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                                 }
                             })).body);
         
-                            console.log(`[${(page * 40) + i + 1}] [Page_${page}-${Index} / ${PageURLS.length} : ${CleanFolderName.substring(0, 60)}] Completed`);
+                            console.log(cli.blueBright(`[${(page * 40) + i + 1}] [${CleanFolderName.substring(0, 60)}] 🔽 Downloaded`));
                         } catch (e) {
                             fails++
         
@@ -377,7 +392,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
 
 
 
-        __Log(cli.green(`[${Index}/${PageLinks.length} : ${PageLink}] ✅ Successfully fetched all images`));
+        __Log(cli.green(`✅ Successfully fetched all images`));
 
 
         const GalleryDataResponse = await $.post("https://api.e-hentai.org/api.php", {

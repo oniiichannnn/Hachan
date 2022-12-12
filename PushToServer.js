@@ -9,7 +9,7 @@ const oldFiles = require("./ImageData.json");
 
 async function Main () 
 {
-    let WriteData = {};
+    let WriteData = oldFiles;
 
     // writing images data
     const FilesRequiredRename = fs.readdirSync("./images").filter(file => file.includes("GAP"));
@@ -25,6 +25,7 @@ async function Main ()
 
     // dont use files required rename because the file names could be different
     const AllFiles = fs.readdirSync("./images").filter(file => (file in oldFiles) === false);
+    console.log("Files to fetch data", AllFiles);
     for (const ImageDir of AllFiles) {
         console.log(`[${AllFiles.indexOf(ImageDir) + 1}/${AllFiles.length}] Fetching data for ${ImageDir}`);
 
@@ -117,9 +118,11 @@ async function Main ()
 
 
     command.split("&&").forEach(subcmd => {
-        const Result = cp.execSync(subcmd);
-
-        console.log(typeof Result === "string" ? Result : Result.toString());
+        console.time(subcmd);
+        
+        cp.execSync(subcmd, {stdio: 'inherit'});
+        
+        console.timeEnd(subcmd);
     });
 
 
