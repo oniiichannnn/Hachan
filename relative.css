@@ -1,12 +1,28 @@
 @media screen and (min-width:800px) and (max-width:1200px) {
+    #image_dirs button #container {
+        flex-direction: column;
+    }
+
+    #image_dirs button img {
+        max-width: 80%;
+    }
+
     #image_dirs button {
-        width: 40%;
-        margin: 10px calc(20% / 4) 10px calc(20% / 4);
+        width: 70%;
+        margin: 10px 20% 10px 20%;
     }
 }
 
 
 @media screen and (max-width:800px) {
+    #image_dirs button #container {
+        flex-direction: column;
+    }
+
+    #image_dirs button img {
+        max-width: 90%;
+    }
+
     #image_dirs button {
         width: 90%;
         margin: 10px 5% 10px 5%;

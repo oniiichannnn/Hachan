@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hachan</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+    <link href="./index.css" rel="stylesheet">
+    <link href="./relative.css" rel="stylesheet">
+</head>
+<body>
+    <div id="navbar">
+        <form id="searchbar" action="/search.html">
+            <h1 id="label">Search</h1>
+            <input type="text" name="query">
+            <input type="submit" value="🔍">
+
+            <div id="search-tags">
+
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        let CurrentInView;
+        let Completed = 0;
+        const tags = [];
+
+        let LastReadYCoordinate = 0;
+
+        import ImageData from "./ImageData.json" assert { type: "json" };
+
+        const parent = document.getElementById("image_dirs");
+
+        const dirs = Object.keys(ImageData);
+
+        grp_tags(
+            dirs
+                .map(dir => {
+                    const tags = ImageData[dir].tags
+
+                    return tags
+                })
+                .flat()
+        ).forEach(tag => {
+            tags.push(tag)
+        });
+
+
+        tags.forEach(tag => {
+            const category_container = document.createElement("div");
+            const category_label = document.createElement("h1");
+
+            category_container.classList.add("category-container");
+            category_label.classList.add("category-label");
+
+            category_label.innerHTML = tag.category;
+
+            document.body.appendChild(category_container);
+            document.body.appendChild(category_label);
+
+            category_container.appendChild(category_label)
+
+            new Set(tag.tags).forEach(tag => {
+                const container     = document.createElement("div");
+                const tagel_input   = document.createElement("input");
+                const tagel_label   = document.createElement("label");
+                // const background    = document.createElement("div");
+
+                // <input type="radio" id="javascript" name="tag" value="JavaScript">
+                tagel_input.type = "checkbox";
+                tagel_input.id = tag;
+                tagel_input.name = "tag";
+                tagel_input.value = tag;
+
+                // <label for="javascript">JavaScript</label>
+                tagel_label.htmlFor = tag;
+                tagel_label.innerHTML = tag;
+
+                tagel_input.classList.add("search-tag-input");
+                tagel_label.classList.add("search-tag-label");
+                container.classList.add("search-tag-container");
+                // background.classList.add("search-tag-container-background");
+
+
+                document.body.appendChild(container);
+                document.body.appendChild(tagel_input);
+                document.body.appendChild(tagel_label);
+                // document.body.appendChild(background);
+
+                container.appendChild(tagel_input);
+                container.appendChild(tagel_label);
+                // container.appendChild(background);
+
+                category_container.appendChild(container);
+            });
+
+            document.querySelector("form#searchbar #search-tags").appendChild(category_container);
+        })
+
+        function grp_tags (tags) {
+                const tags_d = [];
+
+                for (const tag of tags) {
+                    const [category, value] = tag.split(":");
+
+                    if (!tags_d.find(t => t.category === category)) {
+                        tags_d.push({
+                            category,
+                            tags: [value]
+                        })
+                    } else {
+                        tags_d.find(t => t.category === category).tags.push(value)
+                    }
+                }
+
+                return tags_d
+                    .sort((a,b) => {
+                        return b.tags.length - a.tags.length
+                    })
+            }
+
+        function parseInt (string) {
+            return Number(string.match(/[0-9]+/)?.[0]);
+        }
+    </script>
+</body>
+</html>

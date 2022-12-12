@@ -26,23 +26,20 @@
         </div>
     </div>
 
-    <div id="navbar">
-        <form id="searchbar" action="/search.html">
-            <h1 id="label">Search</h1>
-            <input type="text" name="query">
-            <input type="submit" value="🔍">
-
-            <a class="note" href="/advanced.html">✨ Advanced Search</a>
-        </form>
-    </div>
+    <h1 id="resultamount"></h1>
 
     <div id="image_dirs">
 
     </div>
 
     <script type="module">
+        const params    = new URLSearchParams(window.location.search);
+        const q_query   = params.get("query");
+        const q_tags    = params.getAll("tag");
+        
         let CurrentInView;
         let Completed = 0;
+        const tags = [];
 
         let LastReadYCoordinate = 0;
 
@@ -52,7 +49,21 @@
 
         const dirs = Object.keys(ImageData);
 
-        dirs.forEach((dir, dirindex) => {
+        const Filtered = dirs
+            .filter(key => {
+                const data = ImageData[key];
+
+                return (
+                    ( data.name.toLowerCase().includes(q_query.toLowerCase().trim()) )
+                        &&
+                    ( q_tags.length === 0 ? true : q_tags.some(t => data.tags.some(q => t.includes(q))) )
+                )
+            });
+
+        document.getElementById("resultamount").innerHTML = `Found ${Filtered.length} results`;
+
+        Filtered
+        .forEach((dir, dirindex) => {
             const dir_element   = document.createElement("button");
             const Data          = ImageData[dir];
 
@@ -62,10 +73,10 @@
                 `
                 <div id="container">
                     <img src="./images/${dir}/1.jpg">
-                    
                     <div id="content">
                         <div id="top">
                             <h1 id="title">${Data.name}</h1>
+                    
                             ${
                                 localStorage.getItem(`last-read-${dir}`) ?
                                     `<h1 id="last-read">Continue reading at page ${JSON.parse(localStorage.getItem(`last-read-${dir}`)).page}</h1>` 
@@ -78,10 +89,10 @@
                             <div id="tag-ctn">
                                 ${
                                     grp_tags(Data.tags)
-                                        .map(tag => {
+                                        .map((tag, i) => {
                                             return (
                                                 `
-                                                    <div class="tag" id="${tag.category}">
+                                                    <div class="${i === 0 ? "tag-1" : ""} tag" id="${tag.category}">
                                                         <div id="content">
                                                             <h1 id="category">${tag.category}</h1>
 
@@ -89,6 +100,10 @@
                                                                 ${
                                                                     tag.tags
                                                                         .map(tagvalue => {
+                                                                            if (!tags.find(t => t === tagvalue)) {
+                                                                                tags.push(tagvalue)
+                                                                            }
+
                                                                             return (
                                                                                 `
                                                                                     <h1 class="tagvalue">${tagvalue}</h1>
@@ -114,10 +129,32 @@
             document.body.appendChild(dir_element);
             parent.appendChild(dir_element);
 
+            function grp_tags (tags) {
+                const tags_d = [];
+
+                for (const tag of tags) {
+                    const [category, value] = tag.split(":");
+
+                    if (!tags_d.find(t => t.category === category)) {
+                        tags_d.push({
+                            category,
+                            tags: [value]
+                        })
+                    } else {
+                        tags_d.find(t => t.category === category).tags.push(value)
+                    }
+                }
+
+                return tags_d
+                    .sort((a,b) => {
+                        return b.tags.length - a.tags.length
+                    })
+            }
+
             dir_element.addEventListener("click", event => {
                 document.getElementById("view").classList.remove("hidden");
                 document.getElementById("image_dirs").classList.add("hidden");
-                document.getElementById("navbar").classList.add("hidden");
+                document.getElementById("resultamount").classList.add("hidden");
 
                 const MaxImage = ImageData[dir].NumberOfImages;
 
@@ -151,29 +188,6 @@
                     CurrentInView = dir;
                 }
             });
-        
-        
-            function grp_tags (tags) {
-                const tags_d = [];
-
-                for (const tag of tags) {
-                    const [category, value] = tag.split(":");
-
-                    if (!tags_d.find(t => t.category === category)) {
-                        tags_d.push({
-                            category,
-                            tags: [value]
-                        })
-                    } else {
-                        tags_d.find(t => t.category === category).tags.push(value)
-                    }
-                }
-
-                return tags_d
-                    .sort((a,b) => {
-                        return b.tags.length - a.tags.length
-                    })
-            }
         });
 
 
@@ -192,7 +206,7 @@
         document.getElementById("close-btn").addEventListener("click", event => {
             document.getElementById("view").classList.add("hidden");
             document.getElementById("image_dirs").classList.remove("hidden");
-            document.getElementById("navbar").classList.remove("hidden");
+            document.getElementById("resultamount").classList.remove("hidden");
         });
 
 
