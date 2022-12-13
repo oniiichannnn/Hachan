@@ -179,14 +179,15 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
 
         const querytitle = ParsedPage.querySelector("h1#gn").text;
         // const FolderName        = `${querytitle}`;
-        const FolderName        = `${GalleryID}&${GalleryToken}--GAP--${querytitle}`;
+        const FolderName        = `${GalleryID}-${GalleryToken}`;
+        // const FolderName        = `${GalleryID}&${GalleryToken}--GAP--${querytitle}`;
         const IllegalRegex      = /[/\\?%*:|"<>]/g;
         const CleanFolderName   = FolderName.replace(IllegalRegex, "-");
 
-        const startfromdata = (fs.existsSync(`./images/${GalleryID}-${GalleryToken}`) || fs.existsSync(`./images/${CleanFolderName}`)) ?
+        const startfromdata = (fs.existsSync(`./images/${GalleryID}-${GalleryToken}`)) ?
             (() => {
                 if (fs.existsSync(`./images/${CleanFolderName}`)) {
-                    fs.readdirSync(`./images/${CleanFolderName}`)
+                    return fs.readdirSync(`./images/${CleanFolderName}`)
                         .sort((a,b) => {
                             const a1 = a.match(/[0-9]+/)[0];
                             const b1 = b.match(/[0-9]+/)[0];
@@ -195,7 +196,7 @@ module.exports = async function ( HTMLContent , WebSocketClient, Links ) {
                         })
                         [0]
                 } else {
-                    fs.readdirSync(`./images/${GalleryID}-${GalleryToken}`)
+                    return fs.readdirSync(`./images/${GalleryID}-${GalleryToken}`)
                         .sort((a,b) => {
                             const a1 = a.match(/[0-9]+/)[0];
                             const b1 = b.match(/[0-9]+/)[0];
