@@ -27,12 +27,12 @@
     </div>
 
     <div id="navbar">
-        <form id="searchbar" action="/search.html">
+        <form id="searchbar" action="./search.html">
             <h1 id="label">Search</h1>
             <input type="text" name="query">
             <input type="submit" value="🔍">
 
-            <a class="note" href="/advanced.html">✨ Advanced Search</a>
+            <a class="note" href="./advanced.html">✨ Advanced Search</a>
         </form>
     </div>
 
@@ -72,16 +72,17 @@
                                     : 
                                     ""
                             }
+                            <h1 id="doujin-data">${Data.NumberOfImages} Pages • ${Data.rating} ⭐ • ${Data.category}</h1>
                         </div>
 
                         <div id="bot">
                             <div id="tag-ctn">
                                 ${
                                     grp_tags(Data.tags)
-                                        .map(tag => {
+                                        .map((tag, i) => {
                                             return (
                                                 `
-                                                    <div class="tag" id="${tag.category}">
+                                                    <div class="${i === 0 ? "tag-1" : ""} tag" id="${tag.category}">
                                                         <div id="content">
                                                             <h1 id="category">${tag.category}</h1>
 

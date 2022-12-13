@@ -9,7 +9,12 @@
 
     #image_dirs button {
         width: 70%;
-        margin: 10px 20% 10px 20%;
+        margin: 10px 15% 10px 15%;
+    }
+
+    #image_dirs {
+        width: 90%;
+        margin-left: 5%;
     }
 }
 
@@ -24,7 +29,12 @@
     }
 
     #image_dirs button {
-        width: 90%;
+        width: 80%;
         margin: 10px 5% 10px 5%;
+    }
+
+    #image_dirs {
+        width: 90%;
+        margin-left: 5%;
     }
 }

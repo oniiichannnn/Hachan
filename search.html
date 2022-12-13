@@ -36,6 +36,9 @@
         const params    = new URLSearchParams(window.location.search);
         const q_query   = params.get("query");
         const q_tags    = params.getAll("tag");
+        const q_rating  = params.get("rating") || 0;
+        const q_pages   = params.get("pages") || 0;
+        const q_sortby  = params.get("sortby") || "r1";
         
         let CurrentInView;
         let Completed = 0;
@@ -56,9 +59,44 @@
                 return (
                     ( data.name.toLowerCase().includes(q_query.toLowerCase().trim()) )
                         &&
-                    ( q_tags.length === 0 ? true : q_tags.some(t => data.tags.some(q => t.includes(q))) )
+                    ( q_tags.length === 0 ? true : q_tags.some(t => data.tags.some(q => q.includes(t))) )
+                        &&
+                    ( data.rating >= q_rating )
+                        &&
+                    ( data.NumberOfImages >= q_pages )
                 )
-            });
+            })
+            .sort((a,b) => {
+                switch (q_sortby) {
+                    case "p1": {
+                        const Pages_A = ImageData[a].NumberOfImages;
+                        const Pages_B = ImageData[b].NumberOfImages;
+
+                        return Pages_B - Pages_A;
+                    } break;
+
+                    case "p-1": {
+                        const Pages_A = ImageData[a].NumberOfImages;
+                        const Pages_B = ImageData[b].NumberOfImages;
+
+                        return Pages_A - Pages_B;
+                    } break;
+
+                    case "r1": {
+                        const Pages_A = ImageData[a].rating;
+                        const Pages_B = ImageData[b].rating;
+
+                        return Pages_B - Pages_A;
+                    } break;
+
+                    case "r-1": {
+                        const Pages_A = ImageData[a].rating;
+                        const Pages_B = ImageData[b].rating;
+
+                        return Pages_A - Pages_B;
+                    } break;
+                }
+            })
 
         document.getElementById("resultamount").innerHTML = `Found ${Filtered.length} results`;
 
@@ -83,6 +121,8 @@
                                     : 
                                     ""
                             }
+
+                            <h1 id="doujin-data">${Data.NumberOfImages} Pages • ${Data.rating} ⭐ • ${Data.category}</h1>
                         </div>
 
                         <div id="bot">
