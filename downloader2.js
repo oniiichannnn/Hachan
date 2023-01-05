@@ -1,4 +1,4 @@
-// @ For https://asmhentai.com
+// @ For https://hentaiera.com/search/?key=tamano+kedama&search=&mg=1&dj=1&ws=1&is=1&ac=1&gc=1&en=1&jp=0&es=0&fr=0&kr=0&de=0&ru=0&lt=0&dl=0&pp=0&tr=0
 
 async function Main () 
 {
