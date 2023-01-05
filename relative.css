@@ -16,6 +16,10 @@
         width: 90%;
         margin-left: 5%;
     }
+
+    #search-tags .category-container .search-artist-tag-container {
+        max-width: 30%;
+    }
 }
 
 
@@ -36,5 +40,13 @@
     #image_dirs {
         width: 90%;
         margin-left: 5%;
+    }
+
+    #search-tags .category-container .search-artist-tag-container {
+        max-width: 100%;
+    }
+
+    #view #bot .image {
+        width: 100%;
     }
 }

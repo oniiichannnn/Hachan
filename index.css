@@ -1,3 +1,7 @@
+a {
+    text-decoration: none;
+}
+
 body, html {
     background-color: var(--blue-600);
     height: 100%;
@@ -160,7 +164,7 @@ h1#resultamount {
     margin: 5px;
 }
 
-#navbar form#searchbar #config-container {
+#config-container {
     width: 90%;
     
     margin-left: 5%;
@@ -172,7 +176,7 @@ h1#resultamount {
 
 }
 
-#navbar form#searchbar #config-container .config-child {
+#config-container .config-child {
     background-color: var(--blue-600);
     padding: 10px;
 
@@ -182,19 +186,19 @@ h1#resultamount {
     border-radius: 10px;
 }
 
-#navbar form#searchbar #config-container #rating-ctn {
+#config-container #rating-ctn {
     margin-left: calc(78% / 2);
 }
 
-#navbar form#searchbar #config-container #rating-ctn,
-#navbar form#searchbar #config-container #pages-ctn {
+#config-container #rating-ctn,
+#config-container #pages-ctn {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
 }
 
-#navbar form#searchbar #config-container #sort-by-ctn {
+#config-container #sort-by-ctn {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -206,7 +210,7 @@ h1#resultamount {
 }
 
 
-#navbar form#searchbar #config-container div input[type="number"] {
+#config-container div input[type="number"] {
     outline: none;
     border: solid;
     border-width: 2px;
@@ -224,17 +228,17 @@ h1#resultamount {
     text-align: center;
 }
 
-#navbar form#searchbar #config-container div input[type="checkbox"] {
+#config-container div input[type="checkbox"] {
     display: none;
 }
 
-#navbar form#searchbar #config-container div input[type="checkbox"]:checked ~ label {
+#config-container div input[type="checkbox"]:checked ~ label {
     background-color: var(--orange-500);
     padding: 5px;
     border-radius: 10px;
 }
 
-#navbar form#searchbar #config-container div {
+#config-container div {
     font-size: 20px;
     font-family: monospace;
     color: var(--white-300);
@@ -243,13 +247,13 @@ h1#resultamount {
 }
 
 
-#navbar form#searchbar #config-container div h1 {
+#config-container div h1 {
     font-size: 20px;
     font-family: monospace;
     color: var(--white-300);
 }
 
-#navbar form#searchbar #search-tags .category-container {
+#search-tags .category-container {
     margin-top: 5px;
     margin-bottom: 5px;
     
@@ -258,7 +262,7 @@ h1#resultamount {
     border-radius: 10px;
 }
 
-#navbar form#searchbar #search-tags .category-container .category-label {
+#search-tags .category-container .category-label {
     color: var(--white-300);
     font-family: monospace;
     font-size: 30px;
@@ -266,20 +270,58 @@ h1#resultamount {
     text-transform: capitalize;
 }
 
-#navbar form#searchbar #search-tags .category-container .search-tag-container {
-    display: inline-block;
+#search-tags .category-container .search-tag-container {
+    display: inline-flex;
     margin: 2px;
+    flex-direction: column-reverse;
 }
 
-#navbar form#searchbar #search-tags .category-container .search-tag-container input:checked ~ label {
+#search-tags .category-container .search-artist-tag-container {
+    max-width: 20%;
+    margin-bottom: 50%;
+}
+
+#search-tags .category-container .search-tag-container .artworks {
+    width: 100%;
+    position: relative;
+    margin-top: 2%;
+}
+
+#search-tags .category-container .search-tag-container .artworks img {
+    max-width: 100%;
+    border-radius: 10px;
+
+    box-shadow: 0px 0px 10px black;
+}
+
+#search-tags .category-container .search-tag-container .artworks img.pos_0 {
+    z-index: 2;
+    position: relative;
+}
+
+#search-tags .category-container .search-tag-container .artworks img.pos_1 {
+    z-index: 1;
+    position: absolute;
+    left: 0;
+    top: 70%;
+}
+
+#search-tags .category-container .search-tag-container .artworks img.pos_2 {
+    z-index: 0;
+    position: absolute;
+    left: 0;
+    top: 140%;
+}
+
+#search-tags .category-container .search-tag-container input:checked ~ label {
     background-color: black;
 }
 
-#navbar form#searchbar #search-tags .category-container .search-tag-input {
+#search-tags .category-container .search-tag-input {
     display: none;
 }
 
-#navbar form#searchbar #search-tags .category-container .search-tag-label {
+#search-tags .category-container .search-tag-label {
     font-family: monospace;
     font-size: 13px;
     color: var(--white-300);

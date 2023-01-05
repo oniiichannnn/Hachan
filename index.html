@@ -43,6 +43,7 @@
     <script type="module">
         let CurrentInView;
         let Completed = 0;
+        let CurrentMaxWidth = Number(localStorage.getItem("CurrentMaxWidth")) || 0;
 
         let LastReadYCoordinate = 0;
 
@@ -50,7 +51,7 @@
 
         const parent = document.getElementById("image_dirs");
 
-        const dirs = Object.keys(ImageData);
+        const dirs = Object.keys(ImageData).reverse();
 
         dirs.forEach((dir, dirindex) => {
             const dir_element   = document.createElement("button");
@@ -144,6 +145,10 @@
 
                         if (localStorage.getItem(`last-read-${dir}`)) {
                             image_el.onload = function () {
+                                if (CurrentMaxWidth !== 0) {
+                                        image_el.style.width = `${CurrentMaxWidth}%`
+                                }
+                                
                                 ScrollToLastRead(MaxImage, dir)
                             }
                         }
@@ -200,6 +205,8 @@
         document.getElementById("inc-size").addEventListener("click", event => {
             CurrentMaxWidth = Math.min(100, CurrentMaxWidth + 10);
 
+            localStorage.setItem("CurrentMaxWidth", CurrentMaxWidth.toString());
+
             Array.from(document.getElementsByClassName("image")).forEach(el => {
                 el.style.width = `${CurrentMaxWidth}%`
             })
@@ -207,6 +214,8 @@
 
         document.getElementById("dec-size").addEventListener("click", event => {
             CurrentMaxWidth = Math.max(10, CurrentMaxWidth - 10);
+
+            localStorage.setItem("CurrentMaxWidth", CurrentMaxWidth.toString());
 
             Array.from(document.getElementsByClassName("image")).forEach(el => {
                 el.style.width = `${CurrentMaxWidth}%`

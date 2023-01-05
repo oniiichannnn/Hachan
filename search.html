@@ -42,6 +42,7 @@
         
         let CurrentInView;
         let Completed = 0;
+        let CurrentMaxWidth = Number(localStorage.getItem("CurrentMaxWidth")) || 0;
         const tags = [];
 
         let LastReadYCoordinate = 0;
@@ -220,6 +221,10 @@
 
                         if (localStorage.getItem(`last-read-${dir}`)) {
                             image_el.onload = function () {
+                                if (CurrentMaxWidth !== 0) {
+                                        image_el.style.width = `${CurrentMaxWidth}%`
+                                }
+
                                 ScrollToLastRead(MaxImage, dir)
                             }
                         }

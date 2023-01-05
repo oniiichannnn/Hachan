@@ -12,52 +12,8 @@
     <link href="./relative.css" rel="stylesheet">
 </head>
 <body>
-    <div id="navbar">
-        <form id="searchbar" action="./search.html">
-            <h1 id="label">Search</h1>
-            <input type="text" name="query">
-            <input type="submit" value="🔍">
+    <div id="search-tags">
 
-            <div id="config-container">
-                <div id="rating-ctn" class="config-child">
-                    <input id="rating-inp" type="number" min="0" max="5" name="rating">
-                    <h1> / 5 ⭐</h1>
-                </div>
-
-                <div id="pages-ctn" class="config-child">
-                    <input id="pages-inp" type="number" min="0" max="100000" name="pages">
-                    <h1> Pages</h1>
-                </div>
-
-                <div id="sort-by-ctn" class="config-child">
-                    <h1>Sort By</h1>
-
-                    <div>
-                        <input id="sort-by-pages-htl-inp" type="checkbox" name="sortby" value="p1">
-                        <label for="sort-by-pages-htl-inp">📰 Pages (High To Low)</label>
-                    </div>
-
-                    <div>
-                        <input id="sort-by-rating-htl-inp" type="checkbox" name="sortby" value="r1">
-                        <label for="sort-by-rating-htl-inp">⭐ Rating (High To Low)</label>
-                    </div>
-
-                    <div>
-                        <input id="sort-by-pages-lth-inp" type="checkbox" name="sortby" value="p-1">
-                        <label for="sort-by-pages-lth-inp">📰 Pages (Low To High)</label>
-                    </div>
-
-                    <div>
-                        <input id="sort-by-rating-lth-inp" type="checkbox" name="sortby" value="r-1">
-                        <label for="sort-by-rating-lth-inp">⭐ Rating (Low To High)</label>
-                    </div>
-                </div>
-            </div>
-
-            <div id="search-tags">
-
-            </div>
-        </form>
     </div>
 
     <script type="module">
@@ -85,19 +41,7 @@
             tags.push(tag)
         });
 
-        document.getElementById("pages-inp").addEventListener("change", function() {
-            let v = parseInt(this.value);
-            if (v < 0) this.value = 0;
-            if (v > 100000) this.value = 100000;
-        });
-
-        document.getElementById("rating-inp").addEventListener("change", function() {
-            let v = parseInt(this.value);
-            if (v < 0) this.value = 0;
-            if (v > 5) this.value = 5;
-        });
-
-        tags.forEach(tag => {
+        tags.filter(t => t.category === "artist").forEach(tag => {
             const category_container = document.createElement("div");
             const category_label = document.createElement("h1");
 
@@ -113,7 +57,7 @@
             category_container.appendChild(category_label)
 
             new Set(tag.tags.sort()).forEach(tag => {
-                const container     = document.createElement("div");
+                const container     = document.createElement("a");
                 const tagel_input   = document.createElement("input");
                 const tagel_label   = document.createElement("label");
                 // const background    = document.createElement("div");
@@ -123,6 +67,8 @@
                 tagel_input.id = tag;
                 tagel_input.name = "tag";
                 tagel_input.value = tag;
+
+                container.href = `./search.html?query=&rating=&pages=&tag=${tag}`;
 
                 const artworks_amount = Object.keys(ImageData)
                         .filter(key => {
@@ -191,7 +137,7 @@
                 category_container.appendChild(container);
             });
 
-            document.querySelector("form#searchbar #search-tags").appendChild(category_container);
+            document.querySelector("#search-tags").appendChild(category_container);
         })
 
         function grp_tags (tags) {

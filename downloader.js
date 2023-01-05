@@ -4,7 +4,7 @@ async function Main () {
     const readline  = require("readline");
     const cli = require("cli-color");
     const __Search      = require("./Util/Search");
-    const __GetDoujins  = require("./Util/GetDoujins");
+    const __GetDoujins  = require("./Util/GetDoujins2");
 
     const rl        = readline.createInterface({
         input: process.stdin,
