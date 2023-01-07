@@ -114,7 +114,7 @@
                     <img src="./images/${dir}/1.jpg">
                     <div id="content">
                         <div id="top">
-                            <h1 id="title">${Data.name}</h1>
+                            <h1 id="title">${Data.title}</h1>
                     
                             ${
                                 localStorage.getItem(`last-read-${dir}`) ?
@@ -123,7 +123,7 @@
                                     ""
                             }
 
-                            <h1 id="doujin-data">${Data.NumberOfImages} Pages • ${Data.rating} ⭐ • ${Data.category}</h1>
+                            <h1 id="doujin-data">${Data.pages} Pages • ${Data.category}</h1>
                         </div>
 
                         <div id="bot">
@@ -174,7 +174,7 @@
                 const tags_d = [];
 
                 for (const tag of tags) {
-                    const [category, value] = tag.split(":");
+                    const {category, tag:value} = tag;
 
                     if (!tags_d.find(t => t.category === category)) {
                         tags_d.push({

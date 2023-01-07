@@ -20,7 +20,9 @@ async function Main ()
         const body      = request.body.toString();
         const document  = parse(body);
 
-        const tags = document.querySelectorAll("a.tag")
+        const title = document.querySelector("div.row.gallery_first h1").innerHTML;
+        const pages = fs.readdirSync(`./images/${GalleryId}`).length;
+        const tags  = document.querySelectorAll("a.tag")
             .map(el => {
                 const url       = el.attributes.href;
                 const category  = url.split("/")[1];
@@ -28,8 +30,9 @@ async function Main ()
 
                 return { category, tag };
             });
+        const category = tags.find(t => t.category === "category").tag;
 
-        WriteData[GalleryId] = { tags };
+        WriteData[GalleryId] = { title, tags, pages, category };
     }
 
 
