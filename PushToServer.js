@@ -5,106 +5,31 @@ const fs        = require("fs");
 const $         = require("node-superfetch");
 
 const oldFiles = require("./ImageData.json");
+const { parse } = require("node-html-parser");
 
 
 async function Main () 
 {
     let WriteData = oldFiles;
+    const ImageDatasRequiredToFetch = fs.readdirSync("./images").filter(gid => gid in WriteData === false);
 
-    // writing images data
-    const FilesRequiredRename = fs.readdirSync("./images").filter(file => file.includes("GAP"));
+    for (const GalleryId of ImageDatasRequiredToFetch) {
+        console.log(`[${ImageDatasRequiredToFetch.indexOf(GalleryId) + 1}/${ImageDatasRequiredToFetch.length}] Fetching data for ${cli.yellowBright(GalleryId)}`);
 
-    for (const ImageDir of FilesRequiredRename) {
-        const [GalleryID, GalleryToken] = ImageDir.split("--GAP--")[0].split("&");
-        const id = `${GalleryID}-${GalleryToken}`;
+        const request   = await $.get(`https://hentaiera.com/gallery/${GalleryId}/`);
+        const body      = request.body.toString();
+        const document  = parse(body);
 
-        console.log(`[${FilesRequiredRename.indexOf(ImageDir) + 1}/${FilesRequiredRename.length}] Renamed "${ImageDir.split("--GAP--")[1]}" to "${id}"`);
-        fs.renameSync(`./images/${ImageDir}`, `./images/${id}`);
-    }
+        const tags = document.querySelectorAll("a.tag")
+            .map(el => {
+                const url       = el.attributes.href;
+                const category  = url.split("/")[1];
+                const tag       = url.split("/")[2];
 
+                return { category, tag };
+            });
 
-    // dont use files required rename because the file names could be different
-    const AllFiles = fs.readdirSync("./images").filter(file => (file in oldFiles) === false);
-    console.log("Files to fetch data", AllFiles);
-    for (const ImageDir of AllFiles) {
-        console.log(`[${AllFiles.indexOf(ImageDir) + 1}/${AllFiles.length}] Fetching data for ${ImageDir}`);
-
-        const NumberOfImages            = fs.readdirSync(`./images/${ImageDir}`).length;
-        const [GalleryID, GalleryToken] = ImageDir.split("-");
-
-
-        /* @Gallery Data
-        {
-            "gid": 2231376,
-            "token": "a7584a5932",
-            "archiver_key": "459562--7e27d313c50099214fde6bf74f8014d9309a2bb8",
-            "title": "[Gentsuki] Kininaru Danshi ni 〇〇 suru Onnanoko. [Color Ban] [Ongoing]",
-            "title_jpn": "[ゲンツキ] 気になる男子に〇〇する女の子。【カラー版】 [進行中]",
-            "category": "Artist CG",
-            "thumb": "https://ehgt.org/1f/f5/1ff5e361bbf7eaa235e9560dc5d12e624959e9e7-2722367-1882-3000-jpg_l.jpg",
-            "uploader": "Pokom",
-            "posted": "1653702810",
-            "filecount": "329",
-            "filesize": 419547090,
-            "expunged": false,
-            "rating": "4.78",
-            "torrentcount": "2",
-            "torrents": [
-                {
-                    "hash": "25198ccc3cd88393897aa5c630eb95d5ec4f695e",
-                    "added": "1634958428",
-                    "name": "(同人CG集) [ゲンツキ] 気になる男子に〇〇する女の子。【カラー版】 [進行中].zip",
-                    "tsize": "12256",
-                    "fsize": "310511523"
-                },
-                {
-                    "hash": "62c960eb1c7a0e00dc2933a0c83dd43e2e6ebd48",
-                    "added": "1639495362",
-                    "name": "[Artist CG] Gentsuki - Kininaru Danshi ni 〇〇 suru Onnanoko (14 December 2021).zip",
-                    "tsize": "27652",
-                    "fsize": "357426803"
-                }
-            ],
-            "tags": [
-                "artist:gentsuki",
-                "female:ponytail",
-                "female:schoolgirl uniform",
-                "female:stockings",
-                "female:swimsuit",
-                "female:tanlines",
-                "female:twintails",
-                "other:no penetration",
-                "other:nudity only"
-            ],
-            "parent_gid": "2197090",
-            "parent_key": "2f440c5f01",
-            "first_gid": "2043548",
-            "first_key": "bdb0cd9ec2"
-        }
-        */
-        const GalleryDataResponse = await $.post("https://api.e-hentai.org/api.php", {
-            body: JSON.stringify({
-                "method": "gdata",
-                "gidlist": [
-                    [GalleryID, GalleryToken]
-                ],
-                "namespace": 1
-            })
-        });
-        const GalleryData = JSON.parse(GalleryDataResponse.body.toString()).gmetadata[0];
-
-
-        const id = `${GalleryID}-${GalleryToken}`;
-
-
-
-        WriteData[id] = {
-            name            : GalleryData.title,
-            NumberOfImages  : NumberOfImages,
-            tags            : GalleryData.tags,
-            category        : GalleryData.category,
-            rating          : Number(GalleryData.rating)
-        };
+        WriteData[GalleryId] = { tags };
     }
 
 
