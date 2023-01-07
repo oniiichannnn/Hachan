@@ -65,7 +65,7 @@
             dir_element.innerHTML = 
                 `
                 <div id="container">
-                    <img src="./images/${dir}/1.jpg">
+                    <img src="./images/${dir}/1.jpg" class="doujin_image">
                     
                     <div id="content">
                         <div id="top">
@@ -139,6 +139,7 @@
                         const image_el = document.createElement("img");
     
                         image_el.classList.add("image");
+                        image_el.classList.add("doujin_image");
 
                         image_el.id = `img_${i + 1}`;
                         image_el.src = `./images/${dir}/${i + 1}.jpg`;
@@ -224,13 +225,19 @@
                 el.style.width = `${CurrentMaxWidth}%`
             })
         });
+        
+        document.querySelectorAll("img.doujin_image").forEach(el => {
+            el.addEventListener("error", (event) => {
+                handle_image_error_abcdfg(event)
+            })
+        })
 
-        function handle_image_error (event) {
+        function handle_image_error_abcdfg (event) {
             const img_el            = event.target;
             const extensions        = ["jpg", "png", "jpeg", "gif"];
 
             const extension         = img_el.src.split(".").at(-1);
-            const page              = img_el.src.split(".").at(-2);
+            const page              = img_el.src.split(".").at(-2).split("/").at(-1);
             const gallery_id        = img_el.src.split("/").at(-2);
 
             const fails             = [extension];
@@ -248,8 +255,6 @@
                 failed_ex.extensions.push(extension);
             }
 
-            console.log({ extension, page, gallery_id, url: img_el.src, failed_ex });
-            
             img_el.src = `./images/${gallery_id}/${page}.${new_extension}`;
         }
 

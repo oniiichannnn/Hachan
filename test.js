@@ -1,12 +1,1 @@
-const fs = require("fs");
-
-console.log(
-    fs.readdirSync("./images")
-    .filter(d => d.includes("-"))
-    .map((data, i) => {
-        const [a,b] = data.split("-");
-
-        return `${i + 1}. https://e-hentai.org/g/${a}/${b}/`
-    })
-    .join("\n")
-)
+const str = "const img_el            = this;const extensions        = [\"jpg\", \"png\", \"jpeg\", \"gif\"];const extension         = img_el.src.split(\".\").at(-1);const page              = img_el.src.split(\".\").at(-2);const gallery_id        = img_el.src.split(\"/\").at(-2);const fails             = [extension];const failed_ex         = failed_extensions.find(e => e.gid === gallery_id);if (failed_ex) {fails.push(...failed_ex.extensions);}const new_extension     = extensions.filter(e => !fails.includes(e))[0];if (!failed_ex) {failed_extensions.push({ gid: gallery_id, extensions: [extension] });} else {failed_ex.extensions.push(extension);}console.log({ extension, page, gallery_id, url: img_el.src, failed_ex });img_el.src = `./images/${gallery_id}/${page}.${new_extension}`;"
