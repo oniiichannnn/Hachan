@@ -1,0 +1,208 @@
+body,
+html {
+    background-color: var(--green-300);
+    margin: 0;
+    height: 100%;
+}
+
+#query-display {
+    text-align: center;
+    color: var(--white-100);
+    font-family: monospace;
+    font-size: 20px;
+    margin-top: 10%;
+}
+
+#log-history {
+    width: 90%;
+    margin-left: 5%;
+}
+
+.log-message {
+    color: var(--white-300);
+    margin-top: 4px;
+    margin-bottom: 4px;
+    background-color: var(--blue-600);
+    font-size: 15px;
+    font-family: monospace;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+#results {
+    width: 100%;
+}
+
+#results .doujin {
+    background-color: var(--blue-600);
+    display: flex;
+    width: 90%;
+    
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: 5%;
+    margin-right: 5%;
+
+    padding: 10px;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    flex-direction: row;
+}
+
+#results .doujin #top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#results .doujin #top img {
+    border-radius: 10px;
+}
+
+#results .doujin #bot {
+    display: flex;
+    flex-direction: column;
+}
+
+#results .doujin #bot h1 {
+    font-size: 20px;
+    color: var(--white-100);
+    font-family: monospace;
+    margin-left: 10px;
+}
+
+#results .doujin #bot .tag-container {
+    width: 90%;
+
+    padding: 10px;
+}
+
+#results .doujin #bot .tag-container .tag {
+    font-size: 13px;
+    color: var(--white-100);
+    font-family: monospace;
+    display: inline-block;
+
+    background-color: var(--green-300);
+    padding: 5px;
+    border-radius: 10px;
+
+    margin: 2px;
+}
+
+#results .doujin #bot .read-btn {
+    background-color: var(--red-300);
+    color: var(--white-100);
+    padding: 5px;
+    border-radius: 10px;
+    margin-left: 12px;
+    align-self: flex-start;
+}
+
+#view-bg {
+    display: none;
+    height: 100%;
+}
+
+#view-bg #top  {
+    height: 5%;
+    background-color: var(--blue-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#view-bg #top #page-display {
+    color: var(--white-100);
+    font-family: monospace;
+    font-size: 20px;
+}
+
+.action {
+    border: none;
+    font-family: monospace;
+    font-size: 20px;
+    border-radius: 10px;
+
+    margin-right: 2px;
+    margin-left: 2px;
+}
+
+#view-bg div#bot.default {
+    height: 95%;
+    position: relative;
+
+    display: grid;
+    place-items: center;
+    grid-template-columns: 1fr 1fr;
+}
+
+#view-bg div#bot.endless {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#view-bg #bot .display {
+    display: none;
+}
+
+#view-bg #bot .current-display {
+    max-height: 100%;
+    display: block;
+    position: absolute;
+    margin-left: auto;
+}
+
+#view-bg #bot .endless-display {
+    max-width: 60%;
+    display: block;
+}
+
+#view-bg #bot #left, #view-bg #bot #right {
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    position: relative;
+}
+
+.on {
+    background-color: var(--blue-600);
+    color: var(--white-100);
+}
+
+.off {
+    background-color: var(--white-100);
+    color: var(--blue-600);
+}
+
+.button {
+    cursor: pointer;
+}
+
+.hide {
+    display: none;
+}
+
+.link {
+    background-color: var(--white-300);
+    color: var(--blue-600);
+    padding: 1.4px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+:root {
+    --white-100: F0E9D2;
+    --white-300: E6DDC4;
+
+    --green-300: 678983;
+    --red-300: rgb(231, 89, 89);
+
+    --blue-600: 181D31;
+}

@@ -1,0 +1,36 @@
+body,
+html {
+    background-color: var(--green-300);
+    margin: 0;
+    height: 100%;
+}
+
+input#search {
+    width: 50%;
+    background-color: var(--blue-600);
+    color: var(--white-100);
+    font-size: 15px;
+    font-family: monospace;
+    border: none;
+    outline: none;
+    margin-left: 25%;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+h1 {
+    text-align: center;
+    color: var(--white-300);
+    font-size: 20px;
+    font-family: monospace;
+}
+
+:root {
+    --white-100: F0E9D2;
+    --white-300: E6DDC4;
+
+    --green-300: 678983;
+    --red-300: rgb(231, 89, 89);
+
+    --blue-600: 181D31;
+}

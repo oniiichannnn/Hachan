@@ -1,0 +1,29 @@
+<body>
+    @import "DoujinId.css"
+    @import "DoujinId.js"
+
+    <div id="view-bg">
+        <div id="top">
+            <button class="button action" id="endless-view" onclick="EndlessView()">Endless View</button>
+            <button class="button action" id="close-view" onclick="Close()">X</button>
+
+            <button class="button action" id="prev-all" onclick="Previous(true)"><<</button>
+            <button class="button action" id="prev button" onclick="Previous()"><</button>
+
+            <h1 id="page-display"></h1>
+
+            <button class="button action" id="next" onclick="Next()">></button>
+            <button class="button action" id="next-all" onclick="Next(true)">>></button>
+        </div>
+
+        <div id="bot" class="default">
+            <div id="left" onclick="Next()"></div>
+            <div id="right" onclick="Previous()"></div>
+        </div>
+    </div>
+
+
+    <h1 id="query-display">$QUERY$</h1>
+    <div id="log-history"></div>
+    <div id="results"></div>
+</body>
