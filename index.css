@@ -356,9 +356,18 @@ h1#resultamount {
 }
 
 
+.image_dirs#random_doujin_ctn {
+    width: 60%;
+    margin-left: 20%;
+    margin-top: 5%;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
 
-#image_dirs {
+.image_dirs {
     width: 95%;
     margin-left: 2.5%;
     margin-top: 2.5%;
@@ -370,12 +379,16 @@ h1#resultamount {
 
 
 
-#image_dirs button,
-#image_dirs button > * {
+.image_dirs button,
+.image_dirs button > * {
     cursor: pointer;
 }
 
-#image_dirs button {
+.image_dirs#random_doujin_ctn button {
+    background-color: var(--orange-500);
+}
+
+.image_dirs button {
     background-color: var(--green-300);
     border-color: var(--white-300);
     border: solid;
@@ -389,19 +402,27 @@ h1#resultamount {
     border: none;
 }
 
-#image_dirs button #container {
+.image_dirs#random_doujin_ctn button #container {
+    flex-direction: row;
+}
+
+.image_dirs button #container {
     display: flex;
     flex-direction: column;
 
     align-items: center;
 }
 
-#image_dirs button img {
+.image_dirs#random_doujin_ctn button img {
+    max-width: 35%;
+}
+
+.image_dirs button img {
     max-width: 100%;
     border-radius: 10px;
 }
 
-#image_dirs button #content {
+.image_dirs button #content {
     display: flex;
 
     align-items: center;
@@ -411,11 +432,11 @@ h1#resultamount {
     width: 100%;
 }
 
-#image_dirs button #content #top {
+.image_dirs button #content #top {
     width: 95%;
 }
 
-#image_dirs button #content #top h1#last-read {
+.image_dirs button #content #top h1#last-read {
     font-size: 16px;
     font-family: monospace;
     background-color: var(--red-300);
@@ -428,7 +449,7 @@ h1#resultamount {
     margin-right: 10px;
 }
 
-#image_dirs button #content #top h1#doujin-data {
+.image_dirs button #content #top h1#doujin-data {
     font-size: 16px;
     font-family: monospace;
     background-color: var(--blue-600);
@@ -441,7 +462,7 @@ h1#resultamount {
     margin-right: 10px;
 }
 
-#image_dirs button #content #top h1#title {
+.image_dirs button #content #top h1#title {
     font-size: 20px;
     font-family: monospace;
     color: var(--white-100);
@@ -450,19 +471,19 @@ h1#resultamount {
     margin-right: 10px;
 }
 
-#image_dirs button #content #bot {
+.image_dirs button #content #bot {
     width: 100%;
 }
 
-#image_dirs button #content #bot #tag-ctn {
+.image_dirs button #content #bot #tag-ctn {
     width: 100%;
 }
 
-#image_dirs button #content #bot #tag-ctn .tag-1 {
+.image_dirs button #content #bot #tag-ctn .tag-1 {
     width: 90% !important;
 }
 
-#image_dirs button #content #bot #tag-ctn .tag {
+.image_dirs button #content #bot #tag-ctn .tag {
     display: inline-block;
     background-color: var(--blue-600);
     padding: 10px;
@@ -475,21 +496,21 @@ h1#resultamount {
     border-radius: 10px;
 }
 
-#image_dirs button #content #bot #tag-ctn .tag-1 #content {
+.image_dirs button #content #bot #tag-ctn .tag-1 #content {
     flex-direction: column !important;
 }
 
-#image_dirs button #content #bot #tag-ctn .tag #content h1#category {
+.image_dirs button #content #bot #tag-ctn .tag #content h1#category {
     color: var(--white-300);
     font-family: monospace;
     font-size: 17px;
 }
 
-#image_dirs button #content #bot #tag-ctn .tag-1 #content .value h1.tagvalue {
+.image_dirs button #content #bot #tag-ctn .tag-1 #content .value h1.tagvalue {
     display: inline-block !important;
 }
 
-#image_dirs button #content #bot #tag-ctn .tag #content .value h1.tagvalue {
+.image_dirs button #content #bot #tag-ctn .tag #content .value h1.tagvalue {
     font-family: monospace;
     font-size: 15px;
     color: var(--red-300);

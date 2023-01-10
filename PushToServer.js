@@ -48,6 +48,19 @@ let ScheduledEnd = false;
 
 async function Main () 
 {
+
+    rl.question("", (answer) => {
+        if (answer === "end") {
+            ScheduledEnd = true;
+            console.log(red("Scheduled End"));
+        } else
+
+        if (answer === "noend") {
+            ScheduledEnd = false;
+            console.log(green("Removed Scheduled End"));
+        }
+    });
+    
     const WriteData = typeof oldFiles === "object" ? 
         oldFiles 
         : 
@@ -161,18 +174,6 @@ async function Main ()
     rl.close();
 
 
-
-    rl.question("", (answer) => {
-        if (answer === "end") {
-            ScheduledEnd = true;
-            console.log(red("Scheduled End"))
-        } else
-
-        if (answer === "noend") {
-            ScheduledEnd = false;
-            console.log(green("Removed Scheduled End"))
-        }
-    });
 
     function CheckScheduledEnd () {
         if (ScheduledEnd) {

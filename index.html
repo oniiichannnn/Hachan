@@ -37,7 +37,9 @@
         </form>
     </div>
 
-    <div id="image_dirs">
+    <div id="random_doujin_ctn" class="image_dirs"></div>
+
+    <div class="image_dirs main">
 
     </div>
 
@@ -50,11 +52,23 @@
 
         import ImageData from "./ImageData.json" assert { type: "json" };
 
-        const parent = document.getElementById("image_dirs");
+        const parent = document.querySelector("div.image_dirs.main");
 
         const dirs = Object.keys(ImageData).reverse();
 
+        let RandomDoujinIndex = Math.floor(Math.random() * dirs.length);
+        
         dirs.forEach((dir, dirindex) => {
+            if (RandomDoujinIndex === dirindex) {
+                CreateDoujin(dir, document.querySelector("#random_doujin_ctn"));
+            }
+
+            CreateDoujin(dir, parent);
+        });
+
+
+
+        function CreateDoujin (dir, appendto) {
             const dir_element   = document.createElement("button");
             const Data          = ImageData[dir];
 
@@ -118,7 +132,7 @@
                 `
 
             document.body.appendChild(dir_element);
-            parent.appendChild(dir_element);
+            appendto.appendChild(dir_element);
 
             dir_element.addEventListener("click", event => {
                 document.getElementById("view").classList.remove("hidden");
@@ -211,7 +225,7 @@
                         return b.tags.length - a.tags.length
                     })
             }
-        });
+        }
 
 
         $(window).scroll(function () { 
