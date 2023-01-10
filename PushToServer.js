@@ -37,16 +37,33 @@ const {
 } = cli;
 
 
+const rl = readline.createInterface({
+    input   : process.stdin,
+    output  : process.stdout,
+    terminal: false
+});
+
+
+let ScheduledEnd = false;
+
 async function Main () 
 {
-    let WriteData = oldFiles;
-    const ImageDatasRequiredToFetch = fs.readdirSync("./images").filter(gid => gid in WriteData === false);
+    const WriteData = typeof oldFiles === "object" ? 
+        oldFiles 
+        : 
+        {};
+
+
+    const ImageDatasRequiredToFetch = fs
+        .readdirSync("./images")
+        .filter(gid => gid in WriteData === false);
+
 
     for (const GalleryId of ImageDatasRequiredToFetch) {
         const current = magenta(ImageDatasRequiredToFetch.indexOf(GalleryId) + 1);
 
-        console.log(`[${current}/${ImageDatasRequiredToFetch.length}] Fetching data for ${yellowBright(GalleryId)}`);
 
+        console.log(`[${yellowBright(current)}/${ImageDatasRequiredToFetch.length}] Fetching data for ${yellowBright(GalleryId)}`);
 
 
         const request   = await $.get(`https://hentaiera.com/gallery/${GalleryId}/`);
@@ -71,16 +88,24 @@ async function Main ()
 
 
         WriteData[GalleryId] = { title, tags, pages, category, country };
+
+
+        console.log(`[${green(current)}/${ImageDatasRequiredToFetch.length}] Fetched data for ${green(GalleryId)}`);
+
+
+        CheckScheduledEnd();
     }
+
 
 
     fs.writeFileSync("./ImageData.json", JSON.stringify(WriteData, null, 2));
 
     const NewlyAddedImages = ImageDatasRequiredToFetch;
 
-    console.log(`==> Fetched data for ${yellowBright(NewlyAddedImages.length)} galleries`)
-    console.log(`==> ${yellowBright(NewlyAddedImages.length)} newly added galleries`)
-
+    console.log(`==> Fetched data for ${yellowBright(NewlyAddedImages.length)} galleries`);
+    console.log(`==> ${yellowBright(NewlyAddedImages.length)} newly added galleries`);
+    console.log(`==> Preparing to push to GitHub ...`)
+    
 
 
     const UnstagedFiles = cp.execSync("git ls-files -m").toString().trim().split("\n");
@@ -89,84 +114,88 @@ async function Main ()
     const UnstagedOtherFiles = UnstagedFiles.filter(file => !file.trim().startsWith("images/"));
 
 
+    console.log(`==> ${yellowBright(UnstagedFiles.length)} files to push (${red(UnstagedImageFiles.length)} images, ${magenta(UnstagedOtherFiles.length)} other)`)
 
+
+    CheckScheduledEnd();
+
+    
     const commit_msg = `"added ${NewlyAddedImages.length} galleries"`;
 
 
-    // const all_dirs_to_push = grp_dirs();
-    // let current_dir = 0;
-
     if (UnstagedOtherFiles[0]) {
-        console.log("Pushing unstaged other files ....")
+        let TimeStart = Date.now();
+
+        console.log(`[${magenta("Other")}] Starting ...`);
+
         add_commit_push(UnstagedOtherFiles);
-        console.log("Successfully pushed unstaged other files")
+        
+        console.log(`[${magenta("Other")}] Completed in ${red(pms(Date.now() - TimeStart, { verbose: true }))}`);
+
+        CheckScheduledEnd();
     }
 
-    return
 
-    let i = 0;
-    const TP = split_arr_by(UnstagedImageFiles, 100);
-    for (const dir of TP) {
-        i++;
+    let   CurrentDir = 0;
+    const ImageDirsToPush = split_arr_by(UnstagedImageFiles, 100);
+    
+    for (const dir of ImageDirsToPush) {
+        CurrentDir++;
 
-        console.log(`[${i} / ${TP.length}] Starting ... ${dir.length} files ...`);
-        add_commit_push(dir);
+
+        let TimeStart = Date.now();
+
+        console.log(`[Image ${red(CurrentDir)} / ${ImageDirsToPush.length}] Starting ...`);
+
+        add_commit_push(dir, CurrentDir, ImageDirsToPush.length);
+
+        console.log(`[Image ${red(CurrentDir)} / ${ImageDirsToPush.length}] Completed in ${red(pms(Date.now() - TimeStart, { verbose: true }))}`);
+
+
+
+        CheckScheduledEnd();
     }
 
-    // for (const dirs of all_dirs_to_push) {
-    //     try {
-    //         const dirs_to_push = dirs;
 
-    //         let TimeStart = Date.now();
-    //         cp.execSync(`git add ${dirs_to_push.map(d => `"${d}"`).join(" ")}`, {stdio: 'inherit'});
-            
-    
-    
-    //         console.log(`[${green("Git Add")}] ${yellowBright(pms(Date.now() - TimeStart, { verbose: true }))}`)
-    
-    //         cp.execSync(`git commit -m ${commit_msg}`, {stdio: 'inherit'});
-    
-    //         console.log(`[${yellowBright("Git Commit")}] ${yellowBright(pms(Date.now() - TimeStart, { verbose: true }))}`)
-    
-    //         cp.execSync(`git push -u origin main`, {stdio: 'inherit'});
-    
-    //         console.log(`[${red("Git Push")}] ${yellowBright(pms(Date.now() - TimeStart, { verbose: true }))}`)
-    //         console.log(`[Status] ${yellowBright(current_dir + 1)}/${dirs_to_push.length} Pushed`);
-    //         console.log(TimeEstimate());
-    
-    //         current_dir++;
-    
-    //         function TimeEstimate () {
-    //             return `[Status] ${green(pms((dirs_to_push.length - current_dir) * (Date.now() - TimeStart)))} left until finished`
-    //         }
-    //     } catch (e) {
-    //         console.log(e);
-    //         continue;
-    //     }
-    // }
+    console.log(cli.green("Pushed All Files"));
 
-    console.log(cli.green("Pushed All Files."));
 
-    function add_commit_push (dirs) {
-            const dirs_to_push = dirs;
 
-            let TimeStart = Date.now();
+    rl.question("", (answer) => {
+        if (answer === "end") {
+            ScheduledEnd = true;
+        } else
+
+        if (answer === "noend") {
+            ScheduledEnd = false;
+        }
+    });
+
+    function CheckScheduledEnd () {
+        if (ScheduledEnd) {
+            console.log(red("Schduled End"));
+            process.kill(process.pid);
+        }
+    }
+
+    function add_commit_push (dirs, CurrentIndex, Indexes) {
+            const dirs_to_push  = dirs;
+            const label         = `[Image ${red(CurrentIndex)} / ${Indexes}]`
+
 
             cp.execSync(`git add ${dirs_to_push.map(d => `${d.startsWith('"') ? "" : '"'}${d}${d.endsWith('"') ? "" : '"'}`).join(" ")}`, {stdio: 'inherit'});
+            console.log(`${label} Status: ${green("Git Add")}`);
+            console.log(`${label} Status: ${yellowBright("Git Commit")}`);
+            console.log(`${label} Status: ${red("Git Push")}`);
     
-            console.log(`[${green("Git Add")}] ${yellowBright(pms(Date.now() - TimeStart, { verbose: true }))}`)
-    
+
             cp.execSync(`git commit -m ${commit_msg}`, {stdio: 'inherit'});
     
-            console.log(`[${yellowBright("Git Commit")}] ${yellowBright(pms(Date.now() - TimeStart, { verbose: true }))}`)
-    
             cp.execSync(`git push -u origin main`, {stdio: 'inherit'});
-    
-            console.log(`[${red("Git Push")}] ${yellowBright(pms(Date.now() - TimeStart, { verbose: true }))}`)
-            console.log(`[Status] ${yellowBright(current_dir + 1)}/${dirs_to_push.length} Pushed`);
 
-            current_dir++;
+            console.log(`[Status] ${dirs_to_push.length} Pushed`);
     }
+
 
     function split_arr_by (arr, by) {
         let cache   = [];
@@ -180,30 +209,6 @@ async function Main ()
             left -= 1;
 
             if (left <= 0 || i === (arr.length - 1)) {
-                dirs.push(cache);
-                cache = [];
-            }
-
-            i++;
-        }
-
-        return dirs;
-    }
-
-    function grp_dirs () {
-        let cache   = [];
-        let left    = 2000;
-        
-        const dirs = [];
-
-        let i = 0;
-        for (const dir of fs.readdirSync("./images")) {
-            const images = fs.readdirSync(`./images/${dir}`);
-
-            cache.push(`./images/${dir}`);
-            left -= images.length;
-
-            if (left <= 0 || i === (fs.readdirSync("./images").length - 1)) {
                 dirs.push(cache);
                 cache = [];
             }
