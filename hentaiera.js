@@ -55,7 +55,9 @@ const rl = readline.createInterface({
 async function Main () 
 {
     const AutoMode          = process.argv.includes("--auto");
-    const IgnoreQueue       = process.argv.includes("--iq") || process.argv.includes("--ignore-queue");
+    const CheckImages       = process.argv.includes("--ci") || process.argv.includes("--check-images");
+    const IgnoreQueue       = CheckImages || process.argv.includes("--iq") || process.argv.includes("--ignore-queue");
+
     const MaxPages          = Number(process.argv.find(arg => /--(until|u|mp|maxpage|maxpages)=[0-9]+/.test(arg))?.match(/[0-9]+/)?.[0]) || 0;
 
 
@@ -76,7 +78,7 @@ async function Main ()
     const history           = fs.readFileSync("./searchhistory.txt").toString();
 
 
-    const SearchQuery       = empty_queue ? 
+    const SearchQuery       = (!CheckImages && empty_queue) ? 
         await PromptQuery() 
         : 
         null;
@@ -86,7 +88,8 @@ async function Main ()
 
     if (!from_history)  fs.writeFileSync("./searchhistory.txt", `${history}\n${SearchQuery}`);
     if (AutoMode)       console.log(bgYellow.black("⚡ Auto Mode On"));
-    if (!empty_queue)   console.log("==> Downloading queue galleries")
+    if (!empty_queue)   console.log("==> Downloading queue galleries");
+    if (CheckImages)    console.log("==> Performing gallery images check");
 
 
 
@@ -107,7 +110,50 @@ async function Main ()
     const DoujinPages       = [];
     const DoujinLinks       = [];
 
-    const DoujinsToDownload = [];
+    const DoujinsToDownload     = [];
+    let   PresetPages           = 0;
+
+
+
+    if (CheckImages) {
+        const ImageDirsForChecking = fs.readdirSync("./images").filter(dir => !dir.startsWith("!"));
+        let CurrentlyCheckedImageIndex = 0;
+    
+        for (const dir of ImageDirsForChecking) {
+            CurrentlyCheckedImageIndex++;
+    
+            const percentage    = ((CurrentlyCheckedImageIndex / ImageDirsForChecking.length) * 100).toFixed(2);
+            const label         = 
+                `${padding(CurrentlyCheckedImageIndex, ImageDirsForChecking.length.toString().length)}`+
+            
+                " / "+
+            
+                `${ImageDirsForChecking.length} ${yellowBright(`${padding(percentage, 5)}%`)}`;
+    
+            const gid               = dir;
+            const dir_pages         = await GalleryPages(`https://hentaiera.com/gallery/${gid}`);
+            const downloaded_images = fs.readdirSync(`./images/${dir}`).length;
+    
+            if (dir_pages !== downloaded_images) {
+                console.log(`[${label} ${magenta("Checked")}] Gallery: ${padding(gid, 10)} | Status: ${red("Missing")} | Missing: ${red(downloaded_images - dir_pages)}`);
+    
+                DoujinsToDownload.push(`https://hentaiera.com/gallery/${gid}`);
+    
+                PresetPages += dir_pages;
+            } else {
+                console.log(`[${label} ${magenta("Checked")}] Gallery: ${padding(gid, 10)} | Status: ${green("Complete")}`);
+            }
+        }
+
+
+
+
+        console.log(`==> ${yellowBright(DoujinsToDownload.length)} galleries needed to be re-downloaded`);
+        
+        AddToQueue(DoujinsToDownload);
+
+        console.log(`==> added ${yellowBright(DoujinsToDownload.length)} galleries to queue`);
+    }
 
 
     if (GalleryURLRegex.test(SearchQuery)) {
@@ -121,9 +167,6 @@ async function Main ()
 
         DoujinsToDownload.push(...SearchQuery.split(",").map(url => url.trim()));
     } else {
-
-
-
         if (!empty_queue) {
             const GalleryURLS       = Queue.filter(url => GalleryURLRegex.test(url));
             const SearchQueryURLS   = Queue.filter(url => SearchResultURLRegex.test(url));
@@ -155,16 +198,17 @@ async function Main ()
             }
 
             DoujinsToDownload.push(...DoujinLinks);
-        } else {
+        } else
+        
+        if (!CheckImages) {
             await GetAllGalleryURLS(SearchQuery);
             await FilterDoujins();
         }
-
-
-
     }
 
-    if (DoujinsToDownload.length === 0) {
+
+
+    if ((DoujinsToDownload.length === 0)) {
         console.log(bgRed.black("[Error] 0 doujins to download"));
 
         process.kill(process.pid);
@@ -185,11 +229,11 @@ async function Main ()
                     return previous + Number(DoujinPages[DoujinLinks.indexOf(current)])
                 }, 0)
             ||
-                0
+                PresetPages
         );
 
 
-    const ImageDirs = fs.readdirSync("./images");
+    const ImageDirs = fs.readdirSync("./images").filter(dir => !dir.startsWith("!"));
 
 
 
@@ -207,18 +251,10 @@ async function Main ()
             AddToQueue(query);
             console.log(`✅ Added ${yellowBright(query)} to queue`)
         }
+    });
 
 
-        function AddToQueue (query) {
-            const CurrentQueue = fs.readFileSync("./queue.txt");
 
-            if (CurrentQueue === "") {
-                fs.writeFileSync("./queue.txt", `${query}`);
-            } else {
-                fs.writeFileSync("./queue.txt", `${CurrentQueue}\n${query}`);
-            }
-        }
-    })
 
 
     if (DownloadedDirectlyFromGalleryURL) {
@@ -248,14 +284,30 @@ async function Main ()
     }
 
 
+    function AddToQueue (query) 
+    {
+        if (Array.isArray(query)) query = query.join("\n");
+
+        const CurrentQueue = fs.readFileSync("./queue.txt");
+
+        if (CurrentQueue === "") {
+            fs.writeFileSync("./queue.txt", `${query}`);
+        } else {
+            fs.writeFileSync("./queue.txt", `${CurrentQueue}\n${query}`);
+        }
+    }
 
     async function GalleryPages (GalleryURL) 
     {
-        const request   = await $.get(GalleryURL);
-        const body      = request.body.toString();
-        const document  = parse(body);
-
-        return Number(document.querySelector(".btn.btn_colored").innerText.trim().match(/[0-9]+/)[0]);
+        try {
+            const request   = await $.get(GalleryURL);
+            const body      = request.body.toString();
+            const document  = parse(body);
+    
+            return Number(document.querySelector(".btn.btn_colored").innerText.trim().match(/[0-9]+/)[0]);
+        } catch {
+            return await GalleryPages(GalleryURL);
+        }
     }
 
     async function GetAllGalleryURLS (SearchQuery)
@@ -280,7 +332,16 @@ async function Main ()
 
         const GalleryId = Link.match(/gallery\/[0-9]+/)[0].split("/")[1];
 
-        const request   = await $.get(`https://hentaiera.com/view/${GalleryId}/1/`);
+        let request;
+
+        try {
+            request = await $.get(`https://hentaiera.com/view/${GalleryId}/1/`);
+        } catch (e) {
+            console.log(`[${red("ERROR")}] ${yellowBright(`https://hentaiera.com/view/${GalleryId}/1/`)} does not exist`);
+            console.log(e);
+        }
+
+
         const body      = request.body.toString();
         const document  = parse(body);
 
@@ -317,8 +378,6 @@ async function Main ()
 
 
         const format = () => {
-            const { padding } = new ProgressBar({});
-
             const ImagesLeft            = new Intl.NumberFormat().format((TotalImages || 0) - (DownloadedImages || 0));
             // const DownloadTimeInSeconds = (((TotalDownloadTime / DownloadedImages) / 1000) || 0).toFixed(2);
             const DownloadTimeInSeconds = (DownloadTime / 1000).toFixed(2);
@@ -730,8 +789,6 @@ async function Main ()
 
     function __gallery_index ()
     {
-        const { padding } = new ProgressBar({});
-
         const current = padding(CurrentDoujin, DoujinsToDownload.length.toString().length);
 
         return `[${magenta(current)} / ${DoujinsToDownload.length}]`;
@@ -747,6 +804,21 @@ async function Main ()
     function __log ()
     {
         console.log(Array.from(arguments).join("\n"));
+    }
+
+    function padding (string, topad) 
+    {
+        if (typeof string !== "string") string = string.toString();
+
+        let new_string = "";
+
+        for (let i = 0 ; i < (topad - string.length) ; i++) {
+            new_string += " ";
+        }
+
+        new_string = `${new_string}${string}`;
+
+        return new_string
     }
 }
 

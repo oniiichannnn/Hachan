@@ -60,7 +60,7 @@ async function Main ()
             console.log(green("Removed Scheduled End"));
         }
     });
-    
+
     const WriteData = typeof oldFiles === "object" ? 
         oldFiles 
         : 
@@ -79,28 +79,41 @@ async function Main ()
         console.log(`[${yellowBright(current)}/${ImageDatasRequiredToFetch.length}] Fetching data for ${yellowBright(GalleryId)}`);
 
 
-        const request   = await $.get(`https://hentaiera.com/gallery/${GalleryId}/`);
-        const body      = request.body.toString();
-        const document  = parse(body);
-
-
-
-        const title = document.querySelector("div.row.gallery_first h1").innerHTML;
-        const pages = fs.readdirSync(`./images/${GalleryId}`).length;
-        const tags  = document.querySelectorAll("a.tag")
-            .map(el => {
-                const url       = el.attributes.href;
-                const category  = url.split("/")[1];
-                const tag       = url.split("/")[2];
-
-                return { category, tag };
-            });
-        const category = tags.find(t => t.category === "category").tag;
-        const country  = Array.from(document.querySelector(".g_flag").classList).find(c => (c !== "g_flag") && (c !== "flag_in_gallery"));
-
-
-
-        WriteData[GalleryId] = { title, tags, pages, category, country };
+        if (GalleryId.startsWith("!")) {
+            // non gallery folder
+            const title = GalleryId.slice(1);
+            const pages = fs.readdirSync(`./images/${GalleryId}`).length;
+            const tags  = [{ other: "non gallery" }];
+            const category = "doujinshi";
+            const country  = "flag-us";
+    
+    
+    
+            WriteData[GalleryId] = { title, tags, pages, category, country };
+        } else {
+            const request   = await $.get(`https://hentaiera.com/gallery/${GalleryId}/`);
+            const body      = request.body.toString();
+            const document  = parse(body);
+    
+    
+    
+            const title = document.querySelector("div.row.gallery_first h1").innerHTML;
+            const pages = fs.readdirSync(`./images/${GalleryId}`).length;
+            const tags  = document.querySelectorAll("a.tag")
+                .map(el => {
+                    const url       = el.attributes.href;
+                    const category  = url.split("/")[1];
+                    const tag       = url.split("/")[2];
+    
+                    return { category, tag };
+                });
+            const category = tags.find(t => t.category === "category").tag;
+            const country  = [...document.querySelector(".g_flag").classList.values()].find(c => (c !== "g_flag") && (c !== "flag_in_gallery"));
+    
+    
+    
+            WriteData[GalleryId] = { title, tags, pages, category, country };
+        }
 
 
         console.log(`[${green(current)}/${ImageDatasRequiredToFetch.length}] Fetched data for ${green(GalleryId)}`);
