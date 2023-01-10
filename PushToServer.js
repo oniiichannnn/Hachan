@@ -165,10 +165,12 @@ async function Main ()
     rl.question("", (answer) => {
         if (answer === "end") {
             ScheduledEnd = true;
+            console.log(red("Scheduled End"))
         } else
 
         if (answer === "noend") {
             ScheduledEnd = false;
+            console.log(green("Removed Scheduled End"))
         }
     });
 
@@ -212,6 +214,7 @@ async function Main ()
             if (left <= 0 || i === (arr.length - 1)) {
                 dirs.push(cache);
                 cache = [];
+                left = by;
             }
 
             i++;
