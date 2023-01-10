@@ -12,6 +12,11 @@
     <link href="./relative.css" rel="stylesheet">
 </head>
 <body>
+    <div class="flex-col-center">
+        <a class="note" href=".">🏠 Home</a>
+        <a class="note" href="./artists.html">🎨 Artists</a>
+    </div>
+
     <div id="navbar">
         <form id="searchbar" action="./search.html">
             <h1 id="label">Search</h1>
@@ -126,7 +131,7 @@
 
                 const artworks_amount = Object.keys(ImageData)
                         .filter(key => {
-                            return ImageData[key].tags.some(t => t.includes(tag));
+                            return ImageData[key].tags.some(t => t.tag === tag);
                         })
                         .length;
 
@@ -138,7 +143,7 @@
                 if (TagCategory === "artist") {
                     const artworks      = Object.keys(ImageData)
                         .filter(key => {
-                            return ImageData[key].tags.some(t => t.includes(tag));
+                            return ImageData[key].tags.some(t => t.tag === tag);
                         })
                         .sort((keya, keyb) => {
                             const a = ImageData[keya].rating;
@@ -158,6 +163,8 @@
 
                             artwork.classList.add(`pos_${index}`);
                             artwork.src = `./images/${ImageDataKey}/1.jpg`;
+                            
+                            artwork.classList.add("doujin_image");
 
                             document.body.appendChild(artwork);
                             artworks_ctn.appendChild(artwork);
@@ -195,30 +202,31 @@
         })
 
         function grp_tags (tags) {
-                const tags_d = [];
+            const tags_d = [];
 
-                for (const tag of tags) {
-                    const [category, value] = tag.split(":");
+            for (const tag of tags) {
+                const {category, tag:value} = tag;
 
-                    if (!tags_d.find(t => t.category === category)) {
-                        tags_d.push({
-                            category,
-                            tags: [value]
-                        })
-                    } else {
-                        tags_d.find(t => t.category === category).tags.push(value)
-                    }
-                }
-
-                return tags_d
-                    .sort((a,b) => {
-                        return b.tags.length - a.tags.length
+                if (!tags_d.find(t => t.category === category)) {
+                    tags_d.push({
+                        category,
+                        tags: [value]
                     })
+                } else {
+                    tags_d.find(t => t.category === category).tags.push(value)
+                }
             }
+
+            return tags_d
+                .sort((a,b) => {
+                    return b.tags.length - a.tags.length
+                })
+        }
 
         function parseInt (string) {
             return Number(string.match(/[0-9]+/)?.[0]);
         }
     </script>
+    <script type="module" defer src="./html util/ErrorImageHandler.js"></script>
 </body>
 </html>

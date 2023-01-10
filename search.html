@@ -64,21 +64,21 @@
                         &&
                     ( data.rating >= q_rating )
                         &&
-                    ( data.NumberOfImages >= q_pages )
+                    ( data.pages >= q_pages )
                 )
             })
             .sort((a,b) => {
                 switch (q_sortby) {
                     case "p1": {
-                        const Pages_A = ImageData[a].NumberOfImages;
-                        const Pages_B = ImageData[b].NumberOfImages;
+                        const Pages_A = ImageData[a].pages;
+                        const Pages_B = ImageData[b].pages;
 
                         return Pages_B - Pages_A;
                     } break;
 
                     case "p-1": {
-                        const Pages_A = ImageData[a].NumberOfImages;
-                        const Pages_B = ImageData[b].NumberOfImages;
+                        const Pages_A = ImageData[a].pages;
+                        const Pages_B = ImageData[b].pages;
 
                         return Pages_A - Pages_B;
                     } break;
@@ -124,12 +124,14 @@
                             }
 
                             <h1 id="doujin-data">${Data.pages} Pages • ${Data.category}</h1>
+                            <img class=".g_flag ${Data.country}">
                         </div>
 
                         <div id="bot">
                             <div id="tag-ctn">
                                 ${
                                     grp_tags(Data.tags)
+                                        .filter(tag => tag.category === "tag")
                                         .map((tag, i) => {
                                             return (
                                                 `
@@ -140,6 +142,7 @@
                                                             <div class="value">
                                                                 ${
                                                                     tag.tags
+                                                                        .filter((_, i) => i <= 10)
                                                                         .map(tagvalue => {
                                                                             if (!tags.find(t => t === tagvalue)) {
                                                                                 tags.push(tagvalue)
@@ -197,7 +200,7 @@
                 document.getElementById("image_dirs").classList.add("hidden");
                 document.getElementById("resultamount").classList.add("hidden");
 
-                const MaxImage = ImageData[dir].NumberOfImages;
+                const MaxImage = ImageData[dir].pages;
 
                 if (CurrentInView !== dir) {
                     if (CurrentInView) {
@@ -216,6 +219,32 @@
                         image_el.id = `img_${i + 1}`;
                         image_el.src = `./images/${dir}/${i + 1}.jpg`;
     
+                        image_el.onerror = function handle_image_error (event) {
+                            const img_el            = event.target;
+                            const extensions        = ["jpg", "png", "jpeg", "gif"];
+
+                            const extension         = img_el.src.split(".").at(-1);
+                            const page              = img_el.src.split(".").at(-2).split("/").at(-1);
+                            const gallery_id        = img_el.src.split("/").at(-2);
+
+                            const fails             = [extension];
+                            const failed_ex         = failed_extensions.find(e => e.gid === gallery_id);
+
+                            if (failed_ex) {
+                                fails.push(...failed_ex.extensions);
+                            }
+
+                            const new_extension     = extensions.filter(e => !fails.includes(e))[0];
+
+                            if (!failed_ex) {
+                                failed_extensions.push({ gid: gallery_id, extensions: [extension] });
+                            } else {
+                                failed_ex.extensions.push(extension);
+                            }
+
+                            img_el.src = `./images/${gallery_id}/${page}.${new_extension}`;
+                        }
+
                         document.body.appendChild(image_el);
                         document.querySelector("#view #bot").appendChild(image_el);
 
@@ -310,5 +339,6 @@
             return Number(string.match(/[0-9]+/)?.[0]);
         }
     </script>
+    <script type="module" defer src="./html util/ErrorImageHandler.js"></script>
 </body>
 </html>

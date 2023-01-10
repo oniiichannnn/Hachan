@@ -33,6 +33,7 @@
             <input type="submit" value="🔍">
 
             <a class="note" href="./advanced.html">✨ Advanced Search</a>
+            <a class="note" href="./artists.html">🎨 Artists</a>
         </form>
     </div>
 
@@ -41,9 +42,6 @@
     </div>
 
     <script type="module">
-        const failed_extensions = [];
-
-
         let CurrentInView;
         let Completed = 0;
         let CurrentMaxWidth = Number(localStorage.getItem("CurrentMaxWidth")) || 0;
@@ -77,12 +75,14 @@
                                     ""
                             }
                             <h1 id="doujin-data">${Data.pages} Pages • ${Data.category}</h1>
+                            <img class=".g_flag ${Data.country}">
                         </div>
 
                         <div id="bot">
                             <div id="tag-ctn">
                                 ${
                                     grp_tags(Data.tags)
+                                        .filter(tag => tag.category === "tag")
                                         .map((tag, i) => {
                                             return (
                                                 `
@@ -93,6 +93,7 @@
                                                             <div class="value">
                                                                 ${
                                                                     tag.tags
+                                                                        .filter((_, i) => i <= 10)
                                                                         .map(tagvalue => {
                                                                             return (
                                                                                 `
@@ -124,7 +125,7 @@
                 document.getElementById("image_dirs").classList.add("hidden");
                 document.getElementById("navbar").classList.add("hidden");
 
-                const MaxImage = ImageData[dir].NumberOfImages;
+                const MaxImage = ImageData[dir].pages;
 
                 if (CurrentInView !== dir) {
                     if (CurrentInView) {
@@ -143,7 +144,33 @@
 
                         image_el.id = `img_${i + 1}`;
                         image_el.src = `./images/${dir}/${i + 1}.jpg`;
-    
+
+                        image_el.onerror = function handle_image_error (event) {
+                            const img_el            = event.target;
+                            const extensions        = ["jpg", "png", "jpeg", "gif"];
+
+                            const extension         = img_el.src.split(".").at(-1);
+                            const page              = img_el.src.split(".").at(-2).split("/").at(-1);
+                            const gallery_id        = img_el.src.split("/").at(-2);
+
+                            const fails             = [extension];
+                            const failed_ex         = failed_extensions.find(e => e.gid === gallery_id);
+
+                            if (failed_ex) {
+                                fails.push(...failed_ex.extensions);
+                            }
+
+                            const new_extension     = extensions.filter(e => !fails.includes(e))[0];
+
+                            if (!failed_ex) {
+                                failed_extensions.push({ gid: gallery_id, extensions: [extension] });
+                            } else {
+                                failed_ex.extensions.push(extension);
+                            }
+
+                            img_el.src = `./images/${gallery_id}/${page}.${new_extension}`;
+                        }
+                        
                         document.body.appendChild(image_el);
                         document.querySelector("#view #bot").appendChild(image_el);
 
@@ -226,38 +253,6 @@
             })
         });
         
-        document.querySelectorAll("img.doujin_image").forEach(el => {
-            el.addEventListener("error", (event) => {
-                handle_image_error_abcdfg(event)
-            })
-        })
-
-        function handle_image_error_abcdfg (event) {
-            const img_el            = event.target;
-            const extensions        = ["jpg", "png", "jpeg", "gif"];
-
-            const extension         = img_el.src.split(".").at(-1);
-            const page              = img_el.src.split(".").at(-2).split("/").at(-1);
-            const gallery_id        = img_el.src.split("/").at(-2);
-
-            const fails             = [extension];
-            const failed_ex         = failed_extensions.find(e => e.gid === gallery_id);
-
-            if (failed_ex) {
-                fails.push(...failed_ex.extensions);
-            }
-
-            const new_extension     = extensions.filter(e => !fails.includes(e))[0];
-
-            if (!failed_ex) {
-                failed_extensions.push({ gid: gallery_id, extensions: [extension] });
-            } else {
-                failed_ex.extensions.push(extension);
-            }
-
-            img_el.src = `./images/${gallery_id}/${page}.${new_extension}`;
-        }
-
         function ScrollToLastRead (required, dir) {
             Completed++
             if (Completed === 1) {
@@ -297,5 +292,6 @@
             return Number(string.match(/[0-9]+/)?.[0]);
         }
     </script>
+    <script type="module" defer src="./html util/ErrorImageHandler.js"></script>
 </body>
 </html>
