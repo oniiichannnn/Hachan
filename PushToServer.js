@@ -108,7 +108,7 @@ async function Main ()
     
 
 
-    const UnstagedFiles = cp.execSync("git ls-files -m").toString().trim().split("\n");
+    const UnstagedFiles = cp.execSync("git ls-files -o -m").toString().trim().split("\n");
 
     const UnstagedImageFiles = UnstagedFiles.filter(file => file.trim().startsWith("images/"));
     const UnstagedOtherFiles = UnstagedFiles.filter(file => !file.trim().startsWith("images/"));
@@ -119,18 +119,18 @@ async function Main ()
 
     CheckScheduledEnd();
 
-    
+
     const commit_msg = `"added ${NewlyAddedImages.length} galleries"`;
 
 
     if (UnstagedOtherFiles[0]) {
         let TimeStart = Date.now();
 
-        console.log(`[${magenta("Other")}] Starting ...`);
+        console.log(`[${magenta("Other")} ${red(1)} / 1] Starting ...`);
 
-        add_commit_push(UnstagedOtherFiles);
+        add_commit_push(UnstagedOtherFiles, 1, 1, "Other");
         
-        console.log(`[${magenta("Other")}] Completed in ${red(pms(Date.now() - TimeStart, { verbose: true }))}`);
+        console.log(`[${magenta("Other")} ${red(1)} / 1] Completed in ${red(pms(Date.now() - TimeStart, { verbose: true }))}`);
 
         CheckScheduledEnd();
     }
@@ -147,7 +147,7 @@ async function Main ()
 
         console.log(`[Image ${red(CurrentDir)} / ${ImageDirsToPush.length}] Starting ...`);
 
-        add_commit_push(dir, CurrentDir, ImageDirsToPush.length);
+        add_commit_push(dir, CurrentDir, ImageDirsToPush.length, "Image");
 
         console.log(`[Image ${red(CurrentDir)} / ${ImageDirsToPush.length}] Completed in ${red(pms(Date.now() - TimeStart, { verbose: true }))}`);
 
@@ -158,6 +158,7 @@ async function Main ()
 
 
     console.log(cli.green("Pushed All Files"));
+    rl.close();
 
 
 
@@ -178,9 +179,9 @@ async function Main ()
         }
     }
 
-    function add_commit_push (dirs, CurrentIndex, Indexes) {
+    function add_commit_push (dirs, CurrentIndex, Indexes, type) {
             const dirs_to_push  = dirs;
-            const label         = `[Image ${red(CurrentIndex)} / ${Indexes}]`
+            const label         = `[${type} ${red(CurrentIndex)} / ${Indexes}]`
 
 
             cp.execSync(`git add ${dirs_to_push.map(d => `${d.startsWith('"') ? "" : '"'}${d}${d.endsWith('"') ? "" : '"'}`).join(" ")}`, {stdio: 'inherit'});
